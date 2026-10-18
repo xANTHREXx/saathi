@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saathi Demo</title>
+<meta name="description" content="Saathi: a trip companion for women in India. Interactive demo with sample data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Noto+Sans+Devanagari:wght@500&family=Noto+Sans+Kannada:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Indigo Cloth, Stamped Thread: tokens follow DESIGN.md (SaathiTheme.kt is the source). Day = resist white. */
+:root{
+  --bg:#F5F6FA;--s1:#FFFFFF;--s2:#EEF0F7;--s3:#E2E6F2;
+  --fg:#11162A;--fg2:#4D5675;--fg3:#8790AD;
+  --brand:#2E3F86;--onBrand:#FFFFFF;--brandC:#DCE2FF;--onBrandC:#18245A;
+  --help:#B42A23;--helpC:#FFDAD5;--onHelpC:#5A1714;
+  --alum:#8A5F00;--ok:#1E7A4C;--hair:rgba(13,18,34,.10);--starOff:rgba(46,63,134,.15);
+}
+/* Night = indigo cloth. The phone follows the app's night theme. */
+.screen,.layer.checkin,.layer.companion{
+  --bg:#0D1222;--s1:#141A2E;--s2:#1B2340;--s3:#252F52;
+  --fg:#EEF0F7;--fg2:#AAB2CC;--fg3:#6F7899;
+  --brand:#8FA2E8;--onBrand:#0D1222;--brandC:#25336B;--onBrandC:#DCE2FF;
+  --help:#C7372F;--helpC:#5A1714;--onHelpC:#FFDAD5;
+  --alum:#E7B94A;--ok:#7BD3A4;--hair:rgba(255,255,255,.08);--starOff:rgba(255,255,255,.14);
+}
+/* Speak for me is always a bright sheet a stranger can read. */
+.layer.speak{
+  --bg:#F5F6FA;--s1:#FFFFFF;--s2:#EEF0F7;--s3:#E2E6F2;
+  --fg:#11162A;--fg2:#4D5675;--fg3:#8790AD;
+  --brand:#2E3F86;--onBrand:#FFFFFF;--brandC:#DCE2FF;--onBrandC:#18245A;
+  --help:#B42A23;--hair:rgba(13,18,34,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Figtree,system-ui,sans-serif}
+button{font-family:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:18px 0 10px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:38px;height:38px;border-radius:12px;background:#25336B;display:grid;place-items:center;flex:none}
+.mark svg{width:23px;height:23px;fill:#fff}
+.mark.sm{width:20px;height:20px;border-radius:6px}.mark.sm svg{width:12px;height:12px}
+h1{font:600 30px/1 Figtree,sans-serif;letter-spacing:-.02em;margin:0 0 4px}
+.tag{color:var(--fg2);font-size:14px}
+.chip{font:500 13px Figtree;padding:4px 12px;border:1px solid var(--hair);border-radius:18px;background:var(--s1);white-space:nowrap;color:var(--fg2)}
+.chip.sample{background:color-mix(in srgb,var(--alum) 16%,transparent);color:var(--alum);border-color:transparent}
+.scen{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 12px}
+.scen button{border:1px solid var(--hair);background:var(--s1);color:var(--fg);border-radius:20px;padding:10px 16px;font:500 14px Figtree;cursor:pointer}
+.scen button.on{background:var(--brandC);color:var(--onBrandC);border-color:transparent}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--fg2);margin-bottom:14px}
+.stage{display:grid;grid-template-columns:372px 1fr;gap:18px;align-items:start}
+@media (max-width:940px){.stage{grid-template-columns:1fr}}
+
+/* ---------- phone: same look as the Android app (night theme) ---------- */
+.phone{background:#060914;border-radius:44px;padding:10px;position:sticky;top:12px;max-width:372px}
+.screen{background:var(--bg);color:var(--fg);border-radius:34px;height:720px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.status{display:flex;justify-content:space-between;font:500 12px Figtree;color:var(--fg2);padding:14px 18px 0}
+.chiprow{display:flex;gap:8px;padding:10px 16px 0}
+.mchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:18px;background:var(--s1);border:1px solid var(--hair);font:500 13px Figtree;color:var(--fg)}
+.scroll{flex:1;overflow:auto;padding:10px 16px 14px;display:flex;flex-direction:column;gap:12px}
+.ph-title{font:600 34px/38px Figtree;letter-spacing:-.025em}
+.ph-body{display:grid;gap:10px}
+.card{background:var(--s1);border:1px solid var(--hair);border-radius:20px;padding:14px}
+.card.note{background:color-mix(in srgb,var(--alum) 16%,transparent);color:var(--alum);border-color:transparent}
+.card.alertc{background:var(--helpC);color:var(--onHelpC);border-color:transparent}
+.card.okc{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok);border-color:transparent}
+.notif{background:var(--s2);border-radius:20px;padding:12px 14px;font-size:14px;animation:drop .35s ease}
+.notif b{display:block;font-size:12px;color:var(--fg2);font-weight:500}
+@keyframes drop{from{transform:translateY(-12px);opacity:0}to{transform:none;opacity:1}}
+.pill{display:inline-block;font:500 12px Figtree;padding:2px 8px;border-radius:12px;margin-right:4px}
+.pill.ai{background:var(--brandC);color:var(--onBrandC)}
+.pill.rule{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.al{background:var(--helpC);color:var(--onHelpC)}
+.plate{font:700 13px Figtree;letter-spacing:.06em;background:#FAFAF7;color:#121212;border:1.5px solid #121212;border-radius:6px;padding:1px 8px 1px 0;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.plate:before{content:"IND";font-size:7px;background:#1E3A8A;color:#fff;padding:6px 3px;border-radius:4px 0 0 4px;letter-spacing:0}
+.btn{width:100%;min-height:52px;border:0;border-radius:999px;padding:12px 16px;font:600 16px Figtree;cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.98)}
+.btn.green{background:var(--brand);color:var(--onBrand)}
+.btn.out,.btn.dark,.btn.yellow{background:var(--s3);color:var(--fg)}
+.btn.out{background:var(--s2);border:1px solid var(--hair)}
+.btn.sel{background:var(--brandC);color:var(--onBrandC)}
+.btn.red{background:var(--help);color:#fff}
+.btn:disabled{opacity:.6;cursor:default}
+/* the one reversed plate per screen: I'm okay */
+.btn.okay{background:var(--fg);color:var(--bg);min-height:88px;border-radius:32px;font:600 28px Figtree;letter-spacing:-.02em;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.okay svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.hint{font-size:13px;color:var(--fg2);text-align:center}
+.pulse{animation:glow 1.4s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(143,162,232,0)}50%{box-shadow:0 0 0 6px rgba(143,162,232,.28)}}
+
+/* pinned help row: never scrolls away */
+.pinned{display:grid;grid-template-columns:1.15fr 1fr;gap:10px;padding:12px 16px;border-top:1px solid var(--hair);background:var(--bg)}
+.helpplate{position:relative;overflow:hidden;min-height:140px;border:0;border-radius:32px;padding:18px;background:var(--help);color:#fff;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;touch-action:none;user-select:none}
+.helpplate b{position:relative;font:600 28px/32px Figtree;letter-spacing:-.02em}
+.helpplate small{position:relative;font:400 13px/18px Figtree;opacity:.9;margin-top:4px}
+.helpplate .fill{position:absolute;inset:0;background:rgba(0,0,0,.22);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.helpplate.hold .fill{transform:scaleX(1);transition:transform 2s linear}
+.helpplate.quiet{background:var(--helpC);color:var(--onHelpC)}
+.helpplate.quiet b{font-size:22px;line-height:28px}
+.stack{display:grid;gap:10px}
+.tile{border:0;border-radius:20px;background:var(--s2);color:var(--fg);font:600 15px Figtree;padding:0 14px;min-height:65px;text-align:left;cursor:pointer}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--s1);border-top:1px solid var(--hair);padding:8px 4px 10px}
+.nav div{display:grid;justify-items:center;gap:3px;font:500 12px Figtree;color:var(--fg2)}
+.nav i{width:56px;height:28px;border-radius:14px;display:grid;place-items:center}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .act{color:var(--fg)}.nav .act i{background:var(--brandC);color:var(--onBrandC)}
+
+/* star thread: one star per watched minute, newest turns alum when the trip stalls */
+.thread .head{display:flex;align-items:baseline;gap:6px;margin-bottom:10px}
+.thread .head b{font:600 22px/28px Figtree;letter-spacing:-.015em}
+.thread .head span{font-size:13px;color:var(--fg2)}
+.line{position:relative;display:grid;gap:12px;padding-left:2px}
+.line:before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--starOff)}
+.st-row{position:relative;display:flex;align-items:center;gap:12px;min-height:20px;font:600 15px Figtree}
+.st-row small{font:400 13px Figtree;color:var(--fg2);display:block}
+.dot{flex:none;width:14px;height:14px;border-radius:50%;margin:0 1px;position:relative;background:var(--bg)}
+.dot.start{border:3px solid var(--fg3)}
+.dot.event{background:var(--alum)}
+.dot.me{width:18px;height:18px;margin:0;background:var(--brand)}
+.star{flex:none;width:14px;height:14px;margin:0 1px;fill:var(--fg);position:relative}
+.star.off{fill:var(--starOff)}.star.alum{fill:var(--alum)}
+.star.stamp{animation:stamp .26s cubic-bezier(.05,.7,.1,1)}
+@keyframes stamp{from{transform:scale(1.6) rotate(-4deg);opacity:.35}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.star.stamp,.pulse,.notif,.log div{animation:none}.helpplate .fill{transition:none}}
+.stdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px}
+
+/* full-screen layers inside the phone */
+.layer{position:absolute;inset:0;display:none;flex-direction:column;gap:14px;padding:44px 16px 20px;z-index:5;background:var(--bg);color:var(--fg);border-radius:34px}
+.layer .btn{border-radius:20px}
+.layer .btn.okay{border-radius:32px}
+.checkin{align-items:center;text-align:center}
+.checkin .head{font:600 40px/44px Figtree;letter-spacing:-.03em}
+.checkin .why{font:500 13px Figtree;background:color-mix(in srgb,var(--alum) 16%,transparent);color:var(--alum);border-radius:18px;padding:5px 14px;max-width:100%}
+.checkin .sub{font-size:15px;color:var(--fg2)}
+.ring{position:relative;width:200px;height:200px;margin:auto 0}
+.ring svg{width:200px;height:200px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12}
+.ring .trk{stroke:var(--s3)}.ring .prog{stroke:var(--alum);stroke-linecap:round;stroke-dasharray:590.6;stroke-dashoffset:0}
+.ring .count{position:absolute;inset:0;display:grid;place-items:center;font:600 72px/76px Figtree;letter-spacing:-.03em;color:var(--alum)}
+.checkin .okay{margin-top:auto;min-height:108px}
+.speak .ph{font:500 25px/1.35 "Noto Sans Devanagari","Noto Sans Kannada",Figtree,sans-serif;background:var(--s1);border:1px solid var(--hair);border-radius:20px;padding:14px}
+.speak .lang{font:600 13px Figtree;color:var(--brand);margin-bottom:-8px}
+.speak .ttl{font:600 34px/38px Figtree;letter-spacing:-.025em}
+.companion .ttl{font:600 22px/28px Figtree;letter-spacing:-.015em}
+.bubble{border-radius:20px;padding:10px 14px;font-size:15px;max-width:92%;line-height:21px}
+.bubble.s{background:var(--s2);color:var(--fg)}.bubble.h{background:var(--brandC);color:var(--onBrandC);align-self:flex-end}
+.chat{display:flex;flex-direction:column;gap:8px;overflow:auto;flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{background:var(--s2);color:var(--fg);border:1px solid var(--hair);border-radius:18px;padding:9px 14px;font:500 14px Figtree;cursor:pointer}
+
+/* right side: what her contacts see, day theme */
+.panel{background:var(--s1);border:1px solid var(--hair);border-radius:28px;padding:18px;display:grid;gap:10px;align-content:start}
+.panel h2{font:600 20px/26px Figtree;letter-spacing:-.015em;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:940px){.grid2{grid-template-columns:1fr}}
+#map{height:320px;border-radius:20px;border:1px solid var(--hair);background:var(--s2)}
+/* luminance-only map on the pale indigo ramp */
+#map .leaflet-tile-pane{filter:grayscale(1) contrast(.82) brightness(1.08) sepia(.35) hue-rotate(190deg) saturate(1.6)}
+.sstar{display:block;width:12px;height:12px;fill:var(--brand);opacity:.85}
+.banner{padding:14px;border-radius:20px;font-weight:600}
+.b-idle{background:var(--s2);color:var(--fg2)}.b-alert{background:var(--helpC);color:var(--onHelpC)}.b-fine{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.contacts{display:grid;gap:8px}
+.contact{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--hair);border-radius:20px;padding:10px 14px;gap:8px}
+.contact small{color:var(--fg2)}
+.sms{background:var(--s2);border-radius:20px 20px 20px 6px;padding:10px 14px;font-size:13px;display:none}
+.st{font:500 13px Figtree;color:var(--fg2)}.st.told{color:var(--help);font-weight:600}.st.fine{color:var(--ok);font-weight:600}
+.log{font:500 13px Figtree;display:grid;gap:4px;max-height:250px;overflow:auto}
+.log div{padding:5px 10px;border-radius:12px;animation:drop .3s}
+.log .ai{background:var(--brandC);color:var(--onBrandC)}.log .rule{background:color-mix(in srgb,var(--ok) 12%,transparent)}.log .al{background:var(--helpC);color:var(--onHelpC)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:22px}
+.how .panel p{margin:0;color:var(--fg2);font-size:14px}
+.record code{font:500 11.5px "IBM Plex Mono",monospace;word-break:break-all}
+footer{margin-top:24px;color:var(--fg2);font-size:13px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="star" viewBox="-10 -10 20 20"><rect x="-7.2" y="-7.2" width="14.4" height="14.4"/><rect x="-7.2" y="-7.2" width="14.4" height="14.4" transform="rotate(45)"/></symbol></defs></svg>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="mark"><svg><use href="#star"/></svg></div><div><h1>Saathi</h1><div class="tag">A trip companion for women in India: it watches the trip, checks in, and tells the right people, even with no data.</div></div></div>
+  <span class="chip sample">Interactive demo · sample data · fictional people</span>
+</header>
+<div class="scen"><b style="margin-right:4px;font-weight:600">Try a trip:</b>
+  <button id="scA" class="on">Uber auto home at night · Bengaluru</button>
+  <button id="scB">Crowded morning bus · Pune</button>
+  <button id="restart" style="margin-left:auto">↺ Start over</button>
+</div>
+<div class="legend"><span><span class="pill rule">rule</span>on the phone, works offline</span><span><span class="pill ai">Gemini</span>AI step, needs data</span><span><span class="pill al">alert</span>SMS or warning</span><span>Tap the buttons on the phone to choose what happens.</span></div>
+
+<div class="stage">
+  <div class="phone"><div class="screen">
+    <div class="status"><span id="clock">9:10 PM</span><span id="where">Priya's phone · Bengaluru</span></div>
+    <div class="chiprow" id="chiprow"></div>
+    <div class="scroll">
+      <div class="ph-title" id="phTitle">Saathi</div>
+      <div class="ph-body" id="phBody"></div>
+    </div>
+    <div class="pinned" id="pinned">
+      <button class="helpplate" id="help" aria-label="Hold for help"><span class="fill"></span><b id="helpLbl">Hold for help</b><small id="helpTo">Texts Riya and Amma</small></button>
+      <div class="stack"><button class="tile" id="sp">Speak for me</button><button class="tile" id="callBtn">Call Saathi</button></div>
+    </div>
+    <nav class="nav">
+      <div class="act"><i><svg viewBox="0 0 24 24"><path d="M12 3l7 17-7-4-7 4z"/></svg></i>Trip</div>
+      <div><i><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9"/></svg></i>My trips</div>
+      <div><i><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></i>Map</div>
+      <div><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></i>Settings</div>
+    </nav>
+    <div class="layer checkin" id="checkin">
+      <div class="why" id="ciWhy">Your auto has stopped for 5 minutes, 600 m off the route.</div>
+      <div class="head">Are you okay?</div>
+      <div class="ring"><svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="94"/><circle class="prog" id="ring" cx="100" cy="100" r="94"/></svg><div class="count" id="count">10</div></div>
+      <div class="sub">Don't tap: in 10 s Saathi tells your contacts.</div>
+      <button class="btn okay" id="okbtn"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I'm okay</button>
+    </div>
+    <div class="layer speak" id="speak">
+      <div class="ttl">Speak for me</div>
+      <div class="lang" id="l1"></div><div class="ph" id="p1"></div>
+      <div class="lang">हिन्दी</div><div class="ph" id="p2"></div>
+      <div class="lang">English</div><div class="ph" id="p3" style="font-family:Figtree"></div>
+      <div class="row"><button class="btn dark" id="sayIt">🔊 Say it aloud</button><button class="btn green" id="speakDone">Done</button></div>
+      <div style="font-size:13px;color:var(--fg2)">On the phone this plays at full volume and alerts her contacts.</div>
+    </div>
+    <div class="layer companion" id="companion">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="ttl">Saathi call</span><span class="pill ai">Gemini</span></div>
+      <div class="chat" id="chat"></div>
+      <div class="chips" id="chips"></div>
+      <div class="row"><button class="btn red" id="compHelp">Help</button><button class="btn dark" id="compEnd">End call</button></div>
+    </div>
+  </div></div>
+
+  <div style="display:grid;gap:18px">
+    <div class="grid2">
+      <div class="panel">
+        <h2>What her contact sees</h2>
+        <div class="banner b-idle" id="banner">Nothing yet. A trip that goes well sends no message.</div>
+        <div id="map"></div>
+        <div class="tag" id="when">The live link appears only after an alert.</div>
+      </div>
+      <div class="panel">
+        <h2>Who gets told</h2>
+        <div class="contacts" id="contacts"></div>
+        <div class="tag">Contacts are matched to the city she is in. SMS goes from her own SIM, so it works without mobile data.</div>
+        <h2 style="margin-top:6px">What Saathi did</h2>
+        <div class="log" id="log"><div class="rule">Waiting for a trip…</div></div>
+      </div>
+    </div>
+    <div class="panel record" id="record" style="display:none">
+      <h2>After the trip: sealed record</h2>
+      <div id="recBody"></div>
+    </div>
+  </div>
+</div>
+
+<section class="how">
+  <div class="panel"><h2>1 · Trip reader</h2><p><span class="pill ai">Gemini</span> reads the Uber, Ola or Rapido notification and the plate photo. Without AI, an on-phone pattern reads the plate, or she types it.</p></div>
+  <div class="panel"><h2>2 · Watcher</h2><p><span class="pill rule">rule</span> on the phone, every 10 s: a stop over 5 min (10 for bus or train), 300 m off route, or late. No AI decides when to check on her.</p></div>
+  <div class="panel"><h2>3 · Check-in and alert</h2><p><span class="pill al">alert</span> a loud check-in over the lock screen. No answer in 10 s: SMS from her SIM to the right contacts, a recording, and a live link.</p></div>
+  <div class="panel"><h2>4 · Speak for me</h2><p><span class="pill rule">rule</span> one tap says it aloud in the local language, Hindi and English, for when she freezes and can't speak.</p></div>
+  <div class="panel"><h2>5 · Companion</h2><p><span class="pill ai">Gemini</span> talks like an elder sister and names open places nearby. Never says she is safe, never asks what happened.</p></div>
+  <div class="panel"><h2>6 · Reporting guide</h2><p><span class="pill ai">Gemini + Search</span> lists her options and drafts a complaint from the sealed record. She decides and files it herself.</p></div>
+</section>
+<footer>Saathi · Google Cloud AI Builder Cup 2026 · This page simulates the app in the browser with sample data. Names, plates and places are fictional. The emergency step is simulated. Speak-for-me translations are drafts awaiting a native speaker's check.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const TRACKS = { A: [{"lat":12.917004,"lng":77.610376,"t":0},{"lat":12.917408,"lng":77.610653,"t":10},{"lat":12.917813,"lng":77.610929,"t":20},{"lat":12.918217,"lng":77.611206,"t":30},{"lat":12.918621,"lng":77.611482,"t":40},{"lat":12.919025,"lng":77.611759,"t":50},{"lat":12.91943,"lng":77.612035,"t":60},{"lat":12.919834,"lng":77.612312,"t":70},{"lat":12.920238,"lng":77.612588,"t":80},{"lat":12.920642,"lng":77.612865,"t":90},{"lat":12.921047,"lng":77.613141,"t":100},{"lat":12.921451,"lng":77.613418,"t":110},{"lat":12.921855,"lng":77.613694,"t":120},{"lat":12.922259,"lng":77.613971,"t":130},{"lat":12.922664,"lng":77.614247,"t":140},{"lat":12.923068,"lng":77.614524,"t":150},{"lat":12.923472,"lng":77.6148,"t":160},{"lat":12.923876,"lng":77.615077,"t":170},{"lat":12.924281,"lng":77.615353,"t":180},{"lat":12.924685,"lng":77.61563,"t":190},{"lat":12.925089,"lng":77.615906,"t":200},{"lat":12.925493,"lng":77.616183,"t":210},{"lat":12.925898,"lng":77.616459,"t":220},{"lat":12.926302,"lng":77.616736,"t":230},{"lat":12.926706,"lng":77.617012,"t":240},{"lat":12.92711,"lng":77.617289,"t":250},{"lat":12.927514,"lng":77.617565,"t":260},{"lat":12.927919,"lng":77.617842,"t":270},{"lat":12.928323,"lng":77.618118,"t":280},{"lat":12.928727,"lng":77.618395,"t":290},{"lat":12.929131,"lng":77.618671,"t":300},{"lat":12.929536,"lng":77.618948,"t":310},{"lat":12.92994,"lng":77.619224,"t":320},{"lat":12.930344,"lng":77.619501,"t":330},{"lat":12.930748,"lng":77.619777,"t":340},{"lat":12.931153,"lng":77.620054,"t":350},{"lat":12.931557,"lng":77.62033,"t":360},{"lat":12.931961,"lng":77.620607,"t":370},{"lat":12.932365,"lng":77.620883,"t":380},{"lat":12.93277,"lng":77.62116,"t":390},{"lat":12.933174,"lng":77.621436,"t":400},{"lat":12.933578,"lng":77.621713,"t":410},{"lat":12.933982,"lng":77.621989,"t":420},{"lat":12.934387,"lng":77.622266,"t":430},{"lat":12.934791,"lng":77.622542,"t":440},{"lat":12.935195,"lng":77.622819,"t":450},{"lat":12.935599,"lng":77.623096,"t":460},{"lat":12.936004,"lng":77.623372,"t":470},{"lat":12.936408,"lng":77.623649,"t":480},{"lat":12.936812,"lng":77.623925,"t":490},{"lat":12.937216,"lng":77.624202,"t":500},{"lat":12.93762,"lng":77.624478,"t":510},{"lat":12.938025,"lng":77.624755,"t":520},{"lat":12.938429,"lng":77.625031,"t":530},{"lat":12.938833,"lng":77.625308,"t":540},{"lat":12.939237,"lng":77.625584,"t":550},{"lat":12.939642,"lng":77.625861,"t":560},{"lat":12.940046,"lng":77.626137,"t":570},{"lat":12.94045,"lng":77.626414,"t":580},{"lat":12.940854,"lng":77.62669,"t":590},{"lat":12.941259,"lng":77.626967,"t":600},{"lat":12.941663,"lng":77.627243,"t":610},{"lat":12.942067,"lng":77.62752,"t":620},{"lat":12.942471,"lng":77.627796,"t":630},{"lat":12.942876,"lng":77.628073,"t":640},{"lat":12.94328,"lng":77.628349,"t":650},{"lat":12.943684,"lng":77.628626,"t":660},{"lat":12.944088,"lng":77.628902,"t":670},{"lat":12.944493,"lng":77.629179,"t":680},{"lat":12.944897,"lng":77.629455,"t":690},{"lat":12.945301,"lng":77.629732,"t":700},{"lat":12.945705,"lng":77.630008,"t":710},{"lat":12.94611,"lng":77.630285,"t":720},{"lat":12.946514,"lng":77.630561,"t":730},{"lat":12.946918,"lng":77.630838,"t":740},{"lat":12.947322,"lng":77.631115,"t":750},{"lat":12.947726,"lng":77.631391,"t":760},{"lat":12.948131,"lng":77.631668,"t":770},{"lat":12.948131,"lng":77.632589,"t":780},{"lat":12.948131,"lng":77.633511,"t":790},{"lat":12.948131,"lng":77.634433,"t":800},{"lat":12.948131,"lng":77.635355,"t":810},{"lat":12.948131,"lng":77.636276,"t":820},{"lat":12.948131,"lng":77.637198,"t":830},{"lat":12.948095,"lng":77.637198,"t":840},{"lat":12.948167,"lng":77.637198,"t":850},{"lat":12.948095,"lng":77.637198,"t":860},{"lat":12.948167,"lng":77.637198,"t":870},{"lat":12.948095,"lng":77.637198,"t":880},{"lat":12.948167,"lng":77.637198,"t":890},{"lat":12.948095,"lng":77.637198,"t":900},{"lat":12.948167,"lng":77.637198,"t":910},{"lat":12.948095,"lng":77.637198,"t":920},{"lat":12.948167,"lng":77.637198,"t":930},{"lat":12.948095,"lng":77.637198,"t":940},{"lat":12.948167,"lng":77.637198,"t":950},{"lat":12.948095,"lng":77.637198,"t":960},{"lat":12.948167,"lng":77.637198,"t":970},{"lat":12.948095,"lng":77.637198,"t":980},{"lat":12.948167,"lng":77.637198,"t":990},{"lat":12.948095,"lng":77.637198,"t":1000},{"lat":12.948167,"lng":77.637198,"t":1010},{"lat":12.948095,"lng":77.637198,"t":1020},{"lat":12.948167,"lng":77.637198,"t":1030},{"lat":12.948095,"lng":77.637198,"t":1040},{"lat":12.948167,"lng":77.637198,"t":1050},{"lat":12.948095,"lng":77.637198,"t":1060},{"lat":12.948167,"lng":77.637198,"t":1070},{"lat":12.948095,"lng":77.637198,"t":1080},{"lat":12.948167,"lng":77.637198,"t":1090},{"lat":12.948095,"lng":77.637198,"t":1100},{"lat":12.948167,"lng":77.637198,"t":1110},{"lat":12.948095,"lng":77.637198,"t":1120},{"lat":12.948167,"lng":77.637198,"t":1130},{"lat":12.948095,"lng":77.637198,"t":1140},{"lat":12.948167,"lng":77.637198,"t":1150},{"lat":12.948095,"lng":77.637198,"t":1160},{"lat":12.948167,"lng":77.637198,"t":1170},{"lat":12.948095,"lng":77.637198,"t":1180},{"lat":12.948167,"lng":77.637198,"t":1190},{"lat":12.948095,"lng":77.637198,"t":1200},{"lat":12.948167,"lng":77.637198,"t":1210},{"lat":12.948095,"lng":77.637198,"t":1220},{"lat":12.948167,"lng":77.637198,"t":1230},{"lat":12.948095,"lng":77.637198,"t":1240},{"lat":12.948167,"lng":77.637198,"t":1250},{"lat":12.948095,"lng":77.637198,"t":1260},{"lat":12.948167,"lng":77.637198,"t":1270},{"lat":12.948095,"lng":77.637198,"t":1280},{"lat":12.948167,"lng":77.637198,"t":1290},{"lat":12.948095,"lng":77.637198,"t":1300},{"lat":12.948167,"lng":77.637198,"t":1310},{"lat":12.948095,"lng":77.637198,"t":1320},{"lat":12.948167,"lng":77.637198,"t":1330},{"lat":12.948095,"lng":77.637198,"t":1340},{"lat":12.948167,"lng":77.637198,"t":1350},{"lat":12.948095,"lng":77.637198,"t":1360},{"lat":12.948167,"lng":77.637198,"t":1370},{"lat":12.948095,"lng":77.637198,"t":1380},{"lat":12.948167,"lng":77.637198,"t":1390},{"lat":12.948095,"lng":77.637198,"t":1400},{"lat":12.948167,"lng":77.637198,"t":1410},{"lat":12.948095,"lng":77.637198,"t":1420},{"lat":12.948167,"lng":77.637198,"t":1430},{"lat":12.948095,"lng":77.637198,"t":1440},{"lat":12.948167,"lng":77.637198,"t":1450},{"lat":12.948095,"lng":77.637198,"t":1460},{"lat":12.948167,"lng":77.637198,"t":1470},{"lat":12.948095,"lng":77.637198,"t":1480},{"lat":12.948167,"lng":77.637198,"t":1490},{"lat":12.948095,"lng":77.637198,"t":1500},{"lat":12.948167,"lng":77.637198,"t":1510},{"lat":12.948095,"lng":77.637198,"t":1520},{"lat":12.948167,"lng":77.637198,"t":1530},{"lat":12.948095,"lng":77.637198,"t":1540},{"lat":12.948167,"lng":77.637198,"t":1550},{"lat":12.948131,"lng":77.636276,"t":1560},{"lat":12.948131,"lng":77.635355,"t":1570},{"lat":12.948131,"lng":77.634433,"t":1580},{"lat":12.948131,"lng":77.633511,"t":1590},{"lat":12.948131,"lng":77.632589,"t":1600},{"lat":12.948131,"lng":77.631668,"t":1610},{"lat":12.94858,"lng":77.631852,"t":1620},{"lat":12.949029,"lng":77.632036,"t":1630},{"lat":12.949478,"lng":77.632221,"t":1640},{"lat":12.949927,"lng":77.632405,"t":1650},{"lat":12.950377,"lng":77.632589,"t":1660},{"lat":12.950826,"lng":77.632774,"t":1670},{"lat":12.951275,"lng":77.632958,"t":1680},{"lat":12.951724,"lng":77.633142,"t":1690},{"lat":12.952173,"lng":77.633327,"t":1700},{"lat":12.952622,"lng":77.633511,"t":1710},{"lat":12.953071,"lng":77.633695,"t":1720},{"lat":12.953521,"lng":77.63388,"t":1730},{"lat":12.95397,"lng":77.634064,"t":1740},{"lat":12.954419,"lng":77.634248,"t":1750},{"lat":12.954868,"lng":77.634433,"t":1760},{"lat":12.955317,"lng":77.634617,"t":1770},{"lat":12.955766,"lng":77.634802,"t":1780},{"lat":12.956216,"lng":77.634986,"t":1790},{"lat":12.956665,"lng":77.63517,"t":1800},{"lat":12.957114,"lng":77.635355,"t":1810},{"lat":12.957563,"lng":77.635539,"t":1820},{"lat":12.958012,"lng":77.635723,"t":1830},{"lat":12.958461,"lng":77.635908,"t":1840},{"lat":12.95891,"lng":77.636092,"t":1850},{"lat":12.95936,"lng":77.636276,"t":1860},{"lat":12.959809,"lng":77.636461,"t":1870},{"lat":12.960258,"lng":77.636645,"t":1880},{"lat":12.960707,"lng":77.636829,"t":1890},{"lat":12.961156,"lng":77.637014,"t":1900},{"lat":12.961605,"lng":77.637198,"t":1910},{"lat":12.962055,"lng":77.637383,"t":1920},{"lat":12.962504,"lng":77.637567,"t":1930},{"lat":12.962953,"lng":77.637751,"t":1940},{"lat":12.963402,"lng":77.637936,"t":1950},{"lat":12.963851,"lng":77.63812,"t":1960},{"lat":12.9643,"lng":77.638304,"t":1970},{"lat":12.964749,"lng":77.638489,"t":1980},{"lat":12.965199,"lng":77.638673,"t":1990},{"lat":12.965648,"lng":77.638857,"t":2000},{"lat":12.966097,"lng":77.639042,"t":2010},{"lat":12.966546,"lng":77.639226,"t":2020},{"lat":12.966995,"lng":77.639411,"t":2030},{"lat":12.967444,"lng":77.639595,"t":2040},{"lat":12.967894,"lng":77.639779,"t":2050},{"lat":12.968343,"lng":77.639964,"t":2060},{"lat":12.968792,"lng":77.640148,"t":2070},{"lat":12.969241,"lng":77.640332,"t":2080},{"lat":12.96969,"lng":77.640517,"t":2090}], B: [{"lat":18.520759,"lng":73.856937,"t":0},{"lat":18.521119,"lng":73.857174,"t":10},{"lat":18.521478,"lng":73.857411,"t":20},{"lat":18.521837,"lng":73.857647,"t":30},{"lat":18.522197,"lng":73.857884,"t":40},{"lat":18.522556,"lng":73.858121,"t":50},{"lat":18.522915,"lng":73.858358,"t":60},{"lat":18.523275,"lng":73.858595,"t":70},{"lat":18.523634,"lng":73.858832,"t":80},{"lat":18.523993,"lng":73.859068,"t":90},{"lat":18.524353,"lng":73.859305,"t":100},{"lat":18.524712,"lng":73.859542,"t":110},{"lat":18.524676,"lng":73.859542,"t":120},{"lat":18.524748,"lng":73.859542,"t":130},{"lat":18.524676,"lng":73.859542,"t":140},{"lat":18.524748,"lng":73.859542,"t":150},{"lat":18.525071,"lng":73.859779,"t":160},{"lat":18.525431,"lng":73.860016,"t":170},{"lat":18.52579,"lng":73.860253,"t":180},{"lat":18.526149,"lng":73.86049,"t":190},{"lat":18.526509,"lng":73.860726,"t":200},{"lat":18.526868,"lng":73.860963,"t":210},{"lat":18.527227,"lng":73.8612,"t":220},{"lat":18.527586,"lng":73.861437,"t":230},{"lat":18.527946,"lng":73.861674,"t":240},{"lat":18.528305,"lng":73.861911,"t":250},{"lat":18.528664,"lng":73.862148,"t":260},{"lat":18.529024,"lng":73.862384,"t":270},{"lat":18.528988,"lng":73.862384,"t":280},{"lat":18.52906,"lng":73.862384,"t":290},{"lat":18.528988,"lng":73.862384,"t":300},{"lat":18.52906,"lng":73.862384,"t":310},{"lat":18.529383,"lng":73.862621,"t":320},{"lat":18.529742,"lng":73.862858,"t":330},{"lat":18.530102,"lng":73.863095,"t":340},{"lat":18.530461,"lng":73.863332,"t":350},{"lat":18.53082,"lng":73.863569,"t":360},{"lat":18.53118,"lng":73.863806,"t":370},{"lat":18.531539,"lng":73.864042,"t":380},{"lat":18.531898,"lng":73.864279,"t":390},{"lat":18.532258,"lng":73.864516,"t":400},{"lat":18.532617,"lng":73.864753,"t":410},{"lat":18.532976,"lng":73.86499,"t":420},{"lat":18.533336,"lng":73.865227,"t":430},{"lat":18.5333,"lng":73.865227,"t":440},{"lat":18.533372,"lng":73.865227,"t":450},{"lat":18.5333,"lng":73.865227,"t":460},{"lat":18.533372,"lng":73.865227,"t":470},{"lat":18.533695,"lng":73.865464,"t":480},{"lat":18.534054,"lng":73.8657,"t":490},{"lat":18.534414,"lng":73.865937,"t":500},{"lat":18.534773,"lng":73.866174,"t":510},{"lat":18.535132,"lng":73.866411,"t":520},{"lat":18.535492,"lng":73.866648,"t":530},{"lat":18.535851,"lng":73.866885,"t":540},{"lat":18.53621,"lng":73.867122,"t":550},{"lat":18.53657,"lng":73.867358,"t":560},{"lat":18.536929,"lng":73.867595,"t":570},{"lat":18.537288,"lng":73.867832,"t":580},{"lat":18.537648,"lng":73.868069,"t":590},{"lat":18.537612,"lng":73.868069,"t":600},{"lat":18.537684,"lng":73.868069,"t":610},{"lat":18.537612,"lng":73.868069,"t":620},{"lat":18.537684,"lng":73.868069,"t":630},{"lat":18.538007,"lng":73.868306,"t":640},{"lat":18.538366,"lng":73.868543,"t":650},{"lat":18.538726,"lng":73.86878,"t":660},{"lat":18.539085,"lng":73.869017,"t":670},{"lat":18.539444,"lng":73.869253,"t":680},{"lat":18.539804,"lng":73.86949,"t":690},{"lat":18.540163,"lng":73.869727,"t":700},{"lat":18.540522,"lng":73.869964,"t":710},{"lat":18.540881,"lng":73.870201,"t":720},{"lat":18.541241,"lng":73.870438,"t":730},{"lat":18.5416,"lng":73.870675,"t":740},{"lat":18.541959,"lng":73.870912,"t":750},{"lat":18.541924,"lng":73.870912,"t":760},{"lat":18.541995,"lng":73.870912,"t":770},{"lat":18.541924,"lng":73.870912,"t":780},{"lat":18.541995,"lng":73.870912,"t":790},{"lat":18.542319,"lng":73.871148,"t":800},{"lat":18.542678,"lng":73.871385,"t":810},{"lat":18.543037,"lng":73.871622,"t":820},{"lat":18.543397,"lng":73.871859,"t":830},{"lat":18.543756,"lng":73.872096,"t":840},{"lat":18.544115,"lng":73.872333,"t":850},{"lat":18.544475,"lng":73.87257,"t":860},{"lat":18.544834,"lng":73.872807,"t":870},{"lat":18.545193,"lng":73.873043,"t":880},{"lat":18.545553,"lng":73.87328,"t":890},{"lat":18.545912,"lng":73.873517,"t":900},{"lat":18.546271,"lng":73.873754,"t":910},{"lat":18.546235,"lng":73.873754,"t":920},{"lat":18.546307,"lng":73.873754,"t":930},{"lat":18.546235,"lng":73.873754,"t":940},{"lat":18.546307,"lng":73.873754,"t":950},{"lat":18.546631,"lng":73.873991,"t":960},{"lat":18.54699,"lng":73.874228,"t":970},{"lat":18.547349,"lng":73.874465,"t":980},{"lat":18.547709,"lng":73.874702,"t":990},{"lat":18.548068,"lng":73.874938,"t":1000},{"lat":18.548427,"lng":73.875175,"t":1010},{"lat":18.548787,"lng":73.875412,"t":1020},{"lat":18.549146,"lng":73.875649,"t":1030},{"lat":18.549505,"lng":73.875886,"t":1040},{"lat":18.549865,"lng":73.876123,"t":1050},{"lat":18.550224,"lng":73.87636,"t":1060},{"lat":18.550583,"lng":73.876597,"t":1070},{"lat":18.550547,"lng":73.876597,"t":1080},{"lat":18.550619,"lng":73.876597,"t":1090},{"lat":18.550547,"lng":73.876597,"t":1100},{"lat":18.550619,"lng":73.876597,"t":1110},{"lat":18.550943,"lng":73.876834,"t":1120},{"lat":18.551302,"lng":73.87707,"t":1130},{"lat":18.551661,"lng":73.877307,"t":1140},{"lat":18.552021,"lng":73.877544,"t":1150},{"lat":18.55238,"lng":73.877781,"t":1160},{"lat":18.552739,"lng":73.878018,"t":1170},{"lat":18.553099,"lng":73.878255,"t":1180},{"lat":18.553458,"lng":73.878492,"t":1190},{"lat":18.553817,"lng":73.878729,"t":1200},{"lat":18.554177,"lng":73.878966,"t":1210},{"lat":18.554536,"lng":73.879202,"t":1220},{"lat":18.554895,"lng":73.879439,"t":1230},{"lat":18.554859,"lng":73.879439,"t":1240},{"lat":18.554931,"lng":73.879439,"t":1250},{"lat":18.554859,"lng":73.879439,"t":1260},{"lat":18.554931,"lng":73.879439,"t":1270}] };
+const PHRASES = {"touched":{"en-IN":"This man touched me. He's still here. Please help me.","hi-IN":"इस आदमी ने मुझे छुआ। वह अभी भी यहीं है। कृपया मेरी मदद करें।","mr-IN":"या माणसाने मला स्पर्श केला. तो अजून इथेच आहे. कृपया मला मदत करा.","kn-IN":"ಈ ವ್ಯಕ್ತಿ ನನ್ನನ್ನು ಮುಟ್ಟಿದ. ಅವನು ಇನ್ನೂ ಇಲ್ಲೇ ಇದ್ದಾನೆ. ದಯವಿಟ್ಟು ನನಗೆ ಸಹಾಯ ಮಾಡಿ."},"following":{"en-IN":"This man is following me. Please help me.","hi-IN":"यह आदमी मेरा पीछा कर रहा है। कृपया मेरी मदद करें।","mr-IN":"हा माणूस माझा पाठलाग करत आहे. कृपया मला मदत करा.","kn-IN":"ಈ ವ್ಯಕ್ತಿ ನನ್ನನ್ನು ಹಿಂಬಾಲಿಸುತ್ತಿದ್ದಾನೆ. ದಯವಿಟ್ಟು ನನಗೆ ಸಹಾಯ ಮಾಡಿ."},"help":{"en-IN":"I need help. Please stay with me and call for help.","hi-IN":"मुझे मदद चाहिए। कृपया मेरे साथ रहें और मदद बुलाएँ।","mr-IN":"मला मदत हवी आहे. कृपया माझ्यासोबत राहा आणि मदत बोलवा.","kn-IN":"ನನಗೆ ಸಹಾಯ ಬೇಕು. ದಯವಿಟ್ಟು ನನ್ನ ಜೊತೆ ಇರಿ ಮತ್ತು ಸಹಾಯಕ್ಕೆ ಕರೆ ಮಾಡಿ."}};
+const $ = (id) => document.getElementById(id);
+const SCEN = {
+  A: { city: 'Bengaluru', lang: 'kn-IN', langName: 'ಕನ್ನಡ', who: "Priya's phone · Bengaluru", vehicle: 'Auto KA05AB1234', plate: 'KA05AB1234',
+       contacts: [['Riya','sister','Bengaluru'],['Amma','mother','anywhere'],['Aditi','friend','Pune']] },
+  B: { city: 'Pune', lang: 'mr-IN', langName: 'मराठी', who: "Priya's phone · Pune", vehicle: 'PMPML bus', plate: null,
+       contacts: [['Riya','sister','Bengaluru'],['Amma','mother','anywhere'],['Aditi','friend','Pune']] },
+};
+let boarded = false, onBus = false, stalled = false, lastMin = -1, stars = [];
+let S = 'A', track, idx = 0, anim, countT, alerted = false, fineSent = false, plateNote = 'not checked', events = [], phrase = 'touched';
+const map = L.map('map', {zoomControl: false});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+let routeLine, marker;
+
+const STAR = (cls = '') => `<svg class="star ${cls}"><use href="#star"/></svg>`;
+const OKAY = `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I'm okay`;
+const mins = () => Math.floor(track[idx].t / 60);
+function threadHTML(stopLabel) {
+  const m = mins(), shown = Math.min(m, stalled ? 3 : 5), newest = shown - 1;
+  const rows = [`<div class="st-row"><span class="dot start"></span><span>${SCEN[S].city === 'Pune' ? 'Shaniwar Wada stop' : 'Jayanagar metro'}<small>Start</small></span></div>`];
+  if (m > shown) rows.push(`<div class="st-row">${STAR('off')}${STAR('off')}</div>`);
+  for (let i = 0; i < shown; i++) rows.push(`<div class="st-row">${STAR((stalled && i === newest ? 'alum ' : '') + (i === newest && m !== lastMin ? 'stamp' : ''))}</div>`);
+  if (stalled && stopLabel) rows.push(`<div class="st-row"><span class="dot event"></span><span>${stopLabel}<small>Saathi is checking on her</small></span></div>`);
+  rows.push(`<div class="st-row"><span class="dot me"></span><span style="color:var(--brand)">Priya<small>Here now</small></span></div>`);
+  return `<div class="card thread"><div class="head"><b>${m} min</b><span>watched</span></div><div class="line">${rows.join('')}</div></div>`;
+}
+function renderThread(stopLabel) { const e = $('thread'); if (!e) return; e.innerHTML = threadHTML(stopLabel || e.dataset.stop); lastMin = mins(); }
+function chipRow() {
+  const plate = boarded && SCEN[S].plate ? SCEN[S].plate.replace(/(..)(..)(..)(....)/, '$1 $2 $3 $4') : null;
+  $('chiprow').innerHTML = `<span class="mchip"><span class="mark sm"><svg><use href="#star"/></svg></span>Saathi</span>` +
+    (plate ? `<span class="plate">${plate}</span>` : `<span class="mchip">${SCEN[S].city}</span>`);
+}
+function pinState() {
+  const h = $('help'); h.classList.toggle('quiet', alerted);
+  $('helpLbl').textContent = alerted ? 'Hold to alert again' : 'Hold for help';
+  $('helpTo').textContent = alerted ? 'Your contacts already know' : 'Texts ' + recipients().map(c => c[0]).join(' and ');
+}
+const now = () => $('clock').textContent;
+const log = (cls, text) => { const l = $('log'); if (l.dataset.fresh !== '1') { l.innerHTML = ''; l.dataset.fresh = '1'; } const d = document.createElement('div'); d.className = cls; d.textContent = text.replace(/^([0-9]+:[0-9]+) (AM|PM)/, "$1"); l.prepend(d); };
+const screen = (title, html, time) => { if (time) $('clock').textContent = time; $('phTitle').textContent = title; $('phBody').innerHTML = html; chipRow(); };
+const on = (id, fn) => { const e = $(id); if (e) e.onclick = fn; };
+function moveTo(target, ms) { clearInterval(anim); return new Promise(res => { const n = Math.max(1, target - idx), dt = ms / n; anim = setInterval(() => { if (idx >= target) { clearInterval(anim); return res(); } idx++; marker.setLatLng([track[idx].lat, track[idx].lng]); stamp(); renderThread(); }, dt); }); }
+function stamp() { if (idx % 14) return; stars.push(L.marker([track[idx].lat, track[idx].lng], {interactive: false, keyboard: false, icon: L.divIcon({className: '', iconSize: [12, 12], html: '<svg class="sstar"><use href="#star"/></svg>'})}).addTo(map)); }
+function stopIndex() { let best = 0, at = 0; for (let i = 0; i < track.length; i++) { let j = i; while (j + 1 < track.length && Math.abs(track[j+1].lat - track[i].lat) < 1e-5 && Math.abs(track[j+1].lng - track[i].lng) < 1e-5) j++; if (j - i > best) { best = j - i; at = i; } } return best > 3 ? at : Math.floor(track.length * .55); }
+function recipients() { const c = SCEN[S].city; const m = SCEN[S].contacts.filter(x => x[2] === 'anywhere' || x[2] === c); return m.length ? m : SCEN[S].contacts; }
+function drawContacts() {
+  $('contacts').innerHTML = SCEN[S].contacts.map((c, i) => `<div class="contact"><div><b>${c[0]}</b> <small>· ${c[1]} · ${c[2]}</small></div><span class="st" id="cs${i}">waiting</span></div><div class="sms" id="sm${i}"></div>`).join('');
+}
+
+function reset(sc) {
+  S = sc || S; boarded = onBus = stalled = false; lastMin = -1; stars.forEach(s => s.remove()); stars = []; clearInterval(anim); clearInterval(countT); alerted = false; fineSent = false; plateNote = 'not checked'; events = [];
+  ['scA','scB'].forEach(id => $(id).classList.toggle('on', id === 'sc' + S));
+  ['checkin','speak','companion'].forEach(id => $(id).style.display = 'none');
+  track = TRACKS[S]; idx = 0;
+  if (routeLine) routeLine.remove(); if (marker) marker.remove();
+  routeLine = L.polyline(track.map(p => [p.lat, p.lng]), {color: '#2E3F86', weight: 4, opacity: .35}).addTo(map);
+  marker = L.circleMarker([track[0].lat, track[0].lng], {radius: 8, color: '#2E3F86', fillColor: '#2E3F86', fillOpacity: 1}).addTo(map);
+  setTimeout(() => { map.invalidateSize(); map.fitBounds(routeLine.getBounds(), {padding: [20, 20]}); }, 50);
+  $('where').textContent = SCEN[S].who; drawContacts();
+  $('banner').className = 'banner b-idle'; $('banner').textContent = 'Nothing yet. A trip that goes well sends no message.';
+  $('when').textContent = 'The live link appears only after an alert.';
+  $('log').innerHTML = '<div class="rule">Waiting for a trip…</div>'; $('log').dataset.fresh = '0';
+  $('record').style.display = 'none';
+  pinState();
+  S === 'A' ? homeA() : homeB();
+}
+
+/* ---------- shared: help, alert, speak, companion, fine, after ---------- */
+function raise(reason) {
+  if (alerted) return; alerted = true;
+  const to = recipients(), names = to.map(c => c[0]);
+  const p = track[idx], t = now();
+  const sms = `Saathi alert: Priya ${reason}. ${SCEN[S].plate ? 'Vehicle ' + SCEN[S].plate + '. ' : ''}Location at ${t}: https://maps.google.com/?q=${p.lat.toFixed(5)},${p.lng.toFixed(5)} Live: saathi.web.app/l/7f3a…`;
+  SCEN[S].contacts.forEach((c, i) => {
+    const told = names.includes(c[0]);
+    $('cs' + i).textContent = told ? 'SMS sent' : `not told (${c[2]})`; $('cs' + i).className = 'st' + (told ? ' told' : '');
+    if (told) { $('sm' + i).textContent = sms; $('sm' + i).style.display = 'block'; }
+  });
+  log('al', `${t} Alert: SMS from her SIM to ${names.join(', ')}`);
+  const left = SCEN[S].contacts.filter(c => !names.includes(c[0]));
+  if (left.length) log('rule', `${t} ${left.map(c => c[0]).join(', ')} not told: tagged ${left.map(c => c[2]).join(', ')}`);
+  log('rule', `${t} Recording started on the phone; live link created`);
+  $('banner').className = 'banner b-alert'; $('banner').textContent = `Priya ${reason}.${SCEN[S].plate ? ' Vehicle ' + SCEN[S].plate + '.' : ''}`;
+  $('when').textContent = 'Live location · updated every 10 s · only her phone can update it · ends 60 min after the alert';
+  marker.setStyle({color: '#B42A23', fillColor: '#B42A23'}); map.setView(marker.getLatLng(), 15);
+  pinState();
+  alertScreen();
+}
+function alertScreen() {
+  screen('Your contacts were told', `
+    <div class="card alertc"><b>${recipients().map(c => c[0]).join(' and ')} got an SMS</b> with your place and a live link. Recording started.</div>
+    <div class="card note" style="font-size:13px">Emergency step: simulated in this demo</div>
+    <button class="btn okay" id="ok">${OKAY}</button>
+    ${S === 'A' ? '<button class="btn dark" id="drive">The auto drives on</button>' : ''}`);
+  on('ok', fine);
+  on('drive', async () => { $('drive').disabled = true; $('drive').textContent = 'Driving on…'; log('rule', `${now()} Moving again; live link keeps updating`); await moveTo(track.length - 1, 2600); $('clock').textContent = '9:58 PM';
+    screen('You are home', `<div class="card">The auto reached your street.</div><button class="btn okay" id="ok2">${OKAY}</button>`); on('ok2', fine); });
+}
+function speakFor(fromAlert) {
+  const ph = PHRASES[phrase] || PHRASES.touched, l = SCEN[S].lang;
+  $('l1').textContent = SCEN[S].langName + ' · local language'; $('p1').textContent = ph[l]; $('p2').textContent = ph['hi-IN']; $('p3').textContent = ph['en-IN'];
+  $('speak').style.display = 'flex';
+  log('rule', `${now()} Speak for me: ${SCEN[S].langName}, then Hindi, then English`);
+  if (!alerted) raise('used Speak for me');
+  on('sayIt', () => { try { speechSynthesis.cancel(); [[ph[l], l], [ph['hi-IN'], 'hi-IN'], [ph['en-IN'], 'en-IN']].forEach(([t, g]) => { const u = new SpeechSynthesisUtterance(t); u.lang = g; u.rate = .95; speechSynthesis.speak(u); }); } catch {} });
+  on('speakDone', () => { try { speechSynthesis.cancel(); } catch {} $('speak').style.display = 'none'; });
+}
+const REPLIES = {
+  where: ["Where can I go?", () => S === 'A' ? "There's an Apollo Pharmacy open 200 m ahead on Hosur Road, and a bakery with people inside across the road. If you can, walk towards the pharmacy." : "The next stop is Deccan Gymkhana, next to a busy bakery. If you can, get off there with other people."],
+  back: ["He's coming back", () => "Stay where people can see you. Keep the phone in your hand. I'm on the line."],
+  scared: ["I'm scared, please help", () => alerted ? `${recipients().map(c => c[0]).join(' and ')} already know where you are. Move towards light and people. I'm here.` : "I'm telling your contacts now. Move towards light and people. I'm here."],
+  fine: ["I think I'm okay now", () => "Good. When you feel ready, tap I'm okay and I'll let your contacts know."],
+};
+function companion() {
+  $('companion').style.display = 'flex';
+  $('chat').innerHTML = `<div class="bubble s">I'm here with you, Priya. Talk to me out loud, so people near you hear that someone is with you.</div>`;
+  log('ai', `${now()} Companion call started (Gemini)`);
+  $('chips').innerHTML = Object.entries(REPLIES).map(([k, v]) => `<button data-k="${k}">${v[0]}</button>`).join('');
+  $('chips').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const [q, a] = REPLIES[b.dataset.k];
+    $('chat').insertAdjacentHTML('beforeend', `<div class="bubble h">${q}</div>`);
+    setTimeout(() => { $('chat').insertAdjacentHTML('beforeend', `<div class="bubble s">${a()}</div>`); $('chat').scrollTop = 1e6; }, 450);
+    if (b.dataset.k === 'scared' && !alerted) { log('ai', `${now()} Companion: she asked for help → alert`); setTimeout(() => raise('asked for help on a call'), 500); }
+    if (b.dataset.k === 'where') log('ai', `${now()} Companion named open places nearby`);
+  });
+  on('compHelp', () => { if (!alerted) raise('asked for help'); });
+  on('compEnd', () => { $('companion').style.display = 'none'; log('rule', `${now()} Call ended; transcript added to the trip record`); });
+}
+function fine() {
+  ['checkin','speak','companion'].forEach(id => $(id).style.display = 'none'); clearInterval(countT);
+  if (alerted && !fineSent) {
+    fineSent = true;
+    log('al', `${now()} "I'm okay" → SMS: false alarm, Priya is fine`);
+    $('banner').className = 'banner b-fine'; $('banner').textContent = 'Priya says she is fine. The alert is over.';
+    marker.setStyle({color: '#2E3F86', fillColor: '#2E3F86'});
+    SCEN[S].contacts.forEach((c, i) => { if ($('cs' + i).classList.contains('told')) { $('cs' + i).textContent = 'told she is fine'; $('cs' + i).className = 'st fine'; } });
+  }
+  after();
+}
+function after() {
+  screen('Anything felt off?', `
+    <div class="card">Every trip leaves a sealed record on your phone. Small things take two taps.</div>
+    <button class="btn out" id="f0">Nothing</button>
+    <button class="btn out" id="f1">Something felt off, nothing major</button>
+    <button class="btn red" id="f2">Something happened</button>`, S === 'A' ? '8:30 AM' : '6:00 PM');
+  const done = (kind) => { record(kind); };
+  on('f0', () => done('nothing')); on('f1', () => done('felt_off')); on('f2', () => done('something_happened'));
+}
+function record(kind) {
+  log('rule', `${now()} Record sealed on the phone (Keystore HMAC over the whole record)`);
+  if (kind !== 'nothing') log('rule', `${now()} Anonymous point added: rounded place, time band, hashed plate`);
+  let guide = '';
+  if (kind === 'something_happened') {
+    log('ai', `${now()} Reporting guide (Gemini + Search): options and a draft`);
+    guide = `<div><b>Your options</b> <span class="tag">· This is information, not legal advice.</span>
+      <ul style="margin:6px 0;padding-left:18px"><li>Tell someone close what happened.</li>${S === 'A' ? '<li>Report the trip in the Uber app (draft ready).</li>' : ''}
+      <li>Police: you can ask for a Zero FIR at any police station.</li><li>Women's helpline 181 · Emergency 112.</li></ul>
+      <span class="tag">She edits the draft and files it herself. Nothing is sent without her.</span></div>`;
+  }
+  screen(kind === 'something_happened' ? 'What you can do next' : 'Saved', `
+    <div class="card okc">Saved to My trips${kind === 'nothing' ? '.' : ', and added anonymously to the community map.'}</div>
+    ${kind === 'something_happened' ? '<div class="card">Your options and a draft complaint are ready below. Nothing is sent without you.</div>' : ''}
+    <button class="btn out" id="again">Try the other trip</button>`);
+  on('again', () => reset(S === 'A' ? 'B' : 'A'));
+  $('record').style.display = 'block';
+  $('recBody').innerHTML = `<div class="grid2"><div><b>Trip record SA-${S === 'A' ? '7F3A21C9' : '2C91D04B'}</b> <span class="chip">Sealed on this phone · ${S === 'A' ? '3be91c07a4d2' : 'a81f55e09c3b'}</span>
+    <p class="tag" style="margin:6px 0">${SCEN[S].vehicle} · plate check: ${plateNote} · ${events.join(' · ') || 'no events'} · ${alerted ? 'contacts told: ' + recipients().map(c => c[0]).join(', ') : 'nobody was alerted'} · after: ${kind.replace('_', ' ')}</p>
+    <div><code>location log · sha256 9f2c1e7a4b0d5e8f3a6c9b2d1e4f7a0c3b6d9e2f5a8c1b4d7e0f3a6c9b2d5e81</code></div>
+    ${alerted ? '<div><code>audio rec.m4a · sha256 c3a8f1d6b9e2a5c8f1b4e7d0a3c6f9b2e5d8a1c4f7b0e3d6a9c2f5b8e1d4a7c0</code></div>' : ''}</div>${guide || '<div class="tag">Choose "Something happened" to see the reporting options and draft.</div>'}</div>`;
+}
+function checkIn(why, then) {
+  $('ciWhy').textContent = why; $('checkin').style.display = 'flex';
+  let c = 10; $('count').textContent = c; clearInterval(countT);
+  const ring = $('ring'); ring.style.transition = 'none'; ring.style.strokeDashoffset = 0; ring.getBoundingClientRect();
+  ring.style.transition = 'stroke-dashoffset 10s linear'; ring.style.strokeDashoffset = 590.6;
+  countT = setInterval(() => { c--; $('count').textContent = c; if (c <= 0) { clearInterval(countT); $('checkin').style.display = 'none'; log('al', `${now()} No answer in 10 s`); raise("hasn't answered a check-in"); } }, 1000);
+  $('okbtn').onclick = () => { clearInterval(countT); $('checkin').style.display = 'none'; log('rule', `${now()} She answered "I'm okay": nothing sent`); then(); };
+}
+
+/* ---------- scenario A: Uber auto, Bengaluru ---------- */
+function homeA() {
+  screen('Saathi', `
+    <div class="card"><b>You're in Bengaluru</b><br><span class="tag">9:10 PM. Priya leaves the metro station and books an Uber auto home.</span></div>
+    <button class="btn green pulse" id="book">Book the Uber auto</button>
+    <button class="btn out" id="bookF">Book an auto with reports (sample)</button>
+    <div class="hint">Help and Speak for me stay pinned below and work any time, even with no data.</div>`, '9:10 PM');
+  on('book', () => rideA(false)); on('bookF', () => rideA(true));
+}
+function rideA(flagged) {
+  const plate = flagged ? 'KA05XY9876' : 'KA05AB1234'; SCEN.A.plate = plate; SCEN.A.vehicle = 'Auto ' + plate;
+  log('ai', `9:10 Trip reader (Gemini): Uber auto, driver Ravi, plate ${plate}`);
+  if (flagged) {
+    log('al', '9:10 Vehicle check: 4 reports in 90 days (sample data)');
+    screen('Before you get in', `
+      <div class="notif"><b>Uber · now</b>Ravi is arriving in your Auto <span class="plate">${plate.replace(/(..)(..)(..)(....)/, '$1 $2 $3 $4')}</span></div>
+      <div class="card alertc"><b>This auto has 4 reports from other women in the last 90 days.</b><br><span style="font-size:13px">A count only. No names. Sample data.</span></div>
+      <button class="btn out" id="cancel">Cancel and rebook</button>
+      <button class="btn green" id="go">Continue with this auto</button>`);
+    on('cancel', () => { log('rule', '9:11 She cancelled; guidance to rebook in Uber'); rideA(false); });
+    on('go', () => watchingA(plate));
+    return;
+  }
+  log('rule', '9:10 Vehicle check: no reports');
+  watchingA(plate);
+}
+function watchingA(plate) {
+  screen('Watching your Uber ride', `
+    <div class="notif"><b>Uber · now</b>Ravi is arriving in your Auto <span class="plate">${plate.replace(/(..)(..)(..)(....)/, '$1 $2 $3 $4')}</span></div>
+    <div class="card"><span class="pill ai">Gemini</span> Picked up from the Uber notification. You didn't have to do anything.</div>
+    <div class="card okc">Your contacts are told nothing unless something goes wrong.</div>
+    <button class="btn green" id="arr">The auto arrives</button>`);
+  on('arr', () => plateA(plate));
+}
+function plateA(plate) {
+  screen('Check the plate', `
+    <div class="notif"><b>Saathi</b>Your auto has arrived. Snap the plate?</div>
+    <div class="card" style="text-align:center"><div class="tag" style="margin-bottom:6px">Which plate do you see?</div></div>
+    <button class="btn out" id="same"><span class="plate">${plate.replace(/(..)(..)(..)(....)/, '$1 $2 $3 $4')}</span> &nbsp;matches</button>
+    <button class="btn out" id="diff"><span class="plate">KA 41 MN 7720</span> &nbsp;different</button>`, '9:16 PM');
+  on('same', () => { plateNote = 'matched'; log('ai', `9:16 Plate photo read: ${plate} · matches the booking`); rideStartA(); });
+  on('diff', () => {
+    plateNote = 'did not match'; log('al', '9:16 Plate photo read: KA41MN7720 · does NOT match the booking');
+    screen('This plate is different', `
+      <div class="card alertc"><b>Booked ${plate}, but this auto is KA41MN7720.</b></div>
+      <button class="btn green" id="dont">Don't get in</button>
+      <button class="btn red" id="tell">Tell my contacts</button>
+      <button class="btn out" id="okp">It's fine, ride anyway</button>`);
+    on('dont', () => { log('rule', "9:17 She didn't get in; kept in the record"); events.push('did not board, plate mismatch'); after(); });
+    on('tell', () => raise('says the vehicle plate does not match the booking'));
+    on('okp', rideStartA);
+  });
+}
+async function rideStartA() {
+  screen('On the way home', `
+    <div class="card">Phone in her bag, screen off. Saathi checks location every 10 s.</div>
+    <div id="thread" data-stop="Auto stopped, 600 m off route"></div>
+    <button class="btn dark" id="wait" disabled>Riding…</button>`, '9:18 PM');
+  boarded = true; chipRow(); renderThread();
+  log('rule', '9:18 Trip started; watcher on (no message to contacts)');
+  await moveTo(stopIndex(), 3200);
+  $('clock').textContent = '9:26 PM';
+  screen('The auto stops', `
+    <div class="card note"><b>The driver pulls into a fuel station 600 m off the route and walks off.</b></div>
+    <div id="thread" data-stop="Auto stopped, 600 m off route"></div>
+    <div class="card">Priya freezes. What does she do?</div>
+    <button class="btn out" id="wait5">She freezes and doesn't touch the phone</button>
+    <button class="btn red" id="h">She taps Help</button>
+    <button class="btn out" id="c">She calls Saathi</button>`);
+  stalled = true; renderThread();
+  on('wait5', () => { $('clock').textContent = '9:31 PM'; events.push('stopped 5 min, 600 m off route'); log('rule', '9:31 Watcher: stopped 5 min, 600 m off route → check-in'); checkIn('Your auto has stopped for 5 minutes, 600 m off the route.', alertOrContinue); });
+  on('h', () => { events.push('stopped off route'); raise('asked for help'); });
+  on('c', () => { events.push('stopped off route'); companion(); });
+}
+function alertOrContinue() {
+  stalled = false;
+  screen('Still watching', `<div class="card okc">Okay. Saathi keeps watching. The same stop won't ask again.</div>
+    <button class="btn dark" id="drive2">The auto drives on</button>`);
+  on('drive2', async () => { await moveTo(track.length - 1, 2400); $('clock').textContent = '9:58 PM'; screen('You are home', `<div class="card">Nobody was alerted. The trip is saved.</div><button class="btn green" id="end">End trip</button>`); on('end', after); });
+}
+
+/* ---------- scenario B: crowded bus, Pune ---------- */
+function homeB() {
+  screen('Saathi', `
+    <div class="card"><b>You're in Pune</b><br><span class="tag">Saturday 8:40 AM. Priya takes a PMPML bus to the market. Local language: Marathi.</span></div>
+    <button class="btn green pulse" id="bus">Start a bus trip</button>
+    <div class="hint">On the phone, the home-screen widget's main button is Speak for me.</div>`, '8:40 AM');
+  on('bus', busB);
+}
+async function busB() {
+  onBus = true; plateNote = 'bus, no plate check'; log('rule', '8:40 Bus trip started from the widget; Marathi first');
+  screen('On the bus', `<div class="card">Standing, pressed in, phone in hand.</div><div id="thread" data-stop="Pressed in, no way to speak"></div><button class="btn dark" disabled>Riding…</button>`, '8:47 AM');
+  renderThread();
+  await moveTo(Math.floor(track.length * .45), 2600);
+  $('clock').textContent = '8:52 AM';
+  screen('On the bus', `
+    <div class="card note"><b>A man presses against her.</b> She can't move or speak.</div>
+    <div class="card">No sensor can see this moment. What does she choose?</div>
+    <div class="tag">Pick what she wants Saathi to say, then press Speak for me below:</div>
+    <div class="row"><button class="btn out" id="pt">"He touched me"</button><button class="btn out" id="pf">"He's following me"</button></div>
+    <button class="btn red" id="h">Help (silent alert)</button>`);
+  const pick = (k, id) => { phrase = k; ['pt','pf'].forEach(x => $(x).classList.toggle('sel', x === id)); };
+  pick('touched', 'pt');
+  on('pt', () => pick('touched', 'pt')); on('pf', () => pick('following', 'pf'));
+  on('h', () => { events.push('silent help on the bus'); raise('asked for help'); });
+}
+
+(() => {
+  const h = $('help'); let hold = null;
+  const go = () => { h.classList.remove('hold'); if (alerted) log('al', `${now()} Alert sent again (simulated)`); else raise('asked for help'); };
+  const start = (e) => { e.preventDefault(); h.classList.add('hold'); clearTimeout(hold); hold = setTimeout(go, 2000); };
+  const stop = () => { clearTimeout(hold); h.classList.remove('hold'); };
+  h.addEventListener('pointerdown', start); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => h.addEventListener(ev, stop));
+  h.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  $('sp').onclick = () => { if (onBus) { events.push('speak for me on the bus'); $('clock').textContent = '8:53 AM'; } speakFor(false); };
+  $('callBtn').onclick = companion;
+})();
+$('scA').onclick = () => reset('A'); $('scB').onclick = () => reset('B'); $('restart').onclick = () => reset();
+reset('A');
+</script>
+</body>
+</html>
