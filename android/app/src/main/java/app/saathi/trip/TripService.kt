@@ -194,6 +194,7 @@ class TripService : Service() {
             createdAt = tripStartedAt, mode = ui.mode?.name ?: "WALK", app = ui.app, plate = ui.plate,
             events = ui.events.map { it.detail }, alerts = AlertManager.takeAlertLog(),
             plateCheck = ui.plateCheck, evidence = evidence,
+            lat = fixes.lastOrNull()?.lat, lng = fixes.lastOrNull()?.lng, endedAt = now,
         ))
     }
 

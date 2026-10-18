@@ -236,6 +236,7 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
     val s by TripState.ui.collectAsState()
     var plate by remember { mutableStateOf("") }
     var showDemo by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     var cityOverride by remember { mutableStateOf("") }
 
     Column(Modifier.fillMaxSize().background(Color(0xFFF3F4F1)).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -263,6 +264,14 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
         Button(onClick = { ctx.startActivity(Intent(ctx, SpeakForMeActivity::class.java)) }, Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Yellow, contentColor = Ink)) { Text("Speak for me", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
 
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { ctx.startActivity(Intent(ctx, CompanionActivity::class.java)) }, Modifier.weight(1f).height(52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Green)) { Text("Call Saathi", fontSize = 16.sp) }
+            OutlinedButton(onClick = { ctx.startActivity(Intent(ctx, CommunityMapActivity::class.java)) }, Modifier.weight(1f).height(52.dp)) {
+                Text("Community map")
+            }
+        }
+
         if (!s.onTrip) {
             Text("Start a trip", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -279,7 +288,22 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
                 Modifier.fillMaxWidth()) { Text("End trip") }
         }
 
-        val records = remember(s.onTrip) { Store.records(ctx) }
+        var refresh by remember { mutableStateOf(0) }
+        val records = remember(s.onTrip, refresh) { Store.records(ctx) }
+        records.lastOrNull()?.takeIf { it.feltOff == null && !s.onTrip }?.let { last ->
+            FeltOff(last) { kind ->
+                Store.saveRecord(ctx, last.copy(feltOff = kind))
+                val consent = Store.settings(ctx).communityConsent
+                if (kind != "nothing" && consent && last.lat != null && last.lng != null) {
+                    scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        app.saathi.data.Api.point(ctx, last.lat, last.lng, last.endedAt ?: last.createdAt, kind, last.plate)
+                    }
+                }
+                if (kind == "something_happened") ctx.startActivity(Intent(ctx, GuideActivity::class.java)
+                    .putExtra(GuideActivity.EXTRA_CASE, last.caseId).putExtra(GuideActivity.EXTRA_KIND, "something happened"))
+                refresh++
+            }
+        }
         if (records.isNotEmpty()) {
             Text("My trips", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             records.takeLast(5).reversed().forEach { r ->
@@ -287,7 +311,10 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
                     Text("${r.caseId} · ${r.mode.lowercase()}${r.plate?.let { " · $it" } ?: ""}", fontWeight = FontWeight.Bold)
                     r.events.forEach { Text("• $it") }
                     r.alerts.forEach { Text("• $it", color = Red) }
+                    r.plateCheck?.let { Text("Plate check: $it") }
                     r.evidence.forEach { Text("${it.name}: ${it.sha256.take(12)}…", fontSize = 12.sp, color = Color.DarkGray) }
+                    OutlinedButton(onClick = { ctx.startActivity(Intent(ctx, GuideActivity::class.java)
+                        .putExtra(GuideActivity.EXTRA_CASE, r.caseId)) }) { Text("Reporting options and draft") }
                 } }
             }
         }
@@ -325,6 +352,21 @@ private fun stateFor(city: String) = when (city.trim().lowercase()) {
     "pune", "mumbai" -> "Maharashtra"
     "delhi" -> "Delhi"
     else -> null
+}
+
+/** After a trip: two taps to log a small thing, so "nothing major" still leaves a trace (RE-7). */
+@Composable
+private fun FeltOff(r: app.saathi.data.TripRecord, onPick: (String) -> Unit) {
+    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4CC))) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Anything felt off on that trip?", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Ink)
+            Text("You don't need to say what happened.", color = Color.DarkGray, fontSize = 14.sp)
+            OutlinedButton(onClick = { onPick("nothing") }, Modifier.fillMaxWidth()) { Text("Nothing") }
+            OutlinedButton(onClick = { onPick("felt_off") }, Modifier.fillMaxWidth()) { Text("Something felt off, nothing major") }
+            Button(onClick = { onPick("something_happened") }, Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Red)) { Text("Something happened") }
+        }
+    }
 }
 
 /** Hold for 2 seconds to raise help, so a brush against the screen doesn't. */

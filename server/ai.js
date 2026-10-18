@@ -58,6 +58,8 @@ export async function readTrip({ text, image, mime }, gen = gemini) {
 }
 
 const SAFE = /\byou('| a)re (now )?safe\b/gi;
+// Used only when no model answers: English, Hindi and Hinglish words for asking for help.
+const HELP_WORDS = /\b(help|scared|afraid|follow(ing|ed)?|touch(ed|ing)?|unsafe|police|madad|bachao|darr?|peecha|पीछा|मदद|बचाओ)\b/i;
 
 const COMPANION_SYSTEM = (lang) => `You are Saathi, on a phone call with a woman travelling alone in India who feels uneasy.
 Speak like a calm elder sister, in the language ${lang}. Short sentences, out loud.
@@ -77,7 +79,10 @@ export async function companionTurn({ text, lang = "en-IN", lat, lng, history = 
     return { reply: String(r.reply || "").replace(SAFE, "I'm here with you"), raise_alert: Boolean(r.raise_alert), places };
   } catch {
     // No model: keep her talking and treat the call as a request for help.
-    return { reply: "I'm here with you. I've told your contacts. Keep the phone with you and move towards people.", raise_alert: true, places: [] };
+    const help = HELP_WORDS.test(String(text || ""));
+    return help
+      ? { reply: "I'm here with you. I've told your contacts. Keep the phone with you and move towards people.", raise_alert: true, places: [] }
+      : { reply: "I'm here with you. Tell me where you are and what you can see around you.", raise_alert: false, places: [] };
   }
 }
 

@@ -46,3 +46,10 @@ test("guideHasDisclaimer", async () => {
   const r = await guide({ record: { plate: "KA05AB1234" }, kind: "felt_off" }, async () => ({ text: "## Your options\n- Tell someone close", sources: [] }));
   assert.ok(r.markdown.startsWith(DISCLAIMER));
 });
+
+test("noModelOnlyRaisesForHelpWords", async () => {
+  const calm = await companionTurn({ text: "hi, just checking in", lang: "en-IN" }, failing, async () => []);
+  assert.equal(calm.raise_alert, false);
+  const hindi = await companionTurn({ text: "bachao, koi peecha kar raha hai", lang: "hi-IN" }, failing, async () => []);
+  assert.equal(hindi.raise_alert, true);
+});

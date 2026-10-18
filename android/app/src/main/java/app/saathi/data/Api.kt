@@ -7,6 +7,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
@@ -40,6 +42,40 @@ object Api {
         val p = plate?.let { "\"$it\"" } ?: "null"
         post("/community/point", """{"lat":$lat,"lng":$lng,"t":$t,"kind":"$kind","plate":$p}""", device(ctx))
     }
+
+    data class Reply(val reply: String, val raiseAlert: Boolean)
+    data class Pt(val lat: Double, val lng: Double, val band: Int, val kind: String)
+    data class Guide(val markdown: String, val sources: List<Pair<String, String>>)
+
+    /** One companion turn. Null when offline. */
+    fun companion(text: String, lang: String, lat: Double?, lng: Double?, history: List<Pair<String, String>>): Reply? = runCatching {
+        val hist = history.takeLast(6).joinToString(",") { (role, t) -> """{"role":${q(role)},"text":${q(t)}}""" }
+        val body = """{"text":${q(text)},"lang":${q(lang)},"lat":${lat ?: "null"},"lng":${lng ?: "null"},"history":[$hist]}"""
+        post("/companion/turn", body)?.let {
+            Reply(it["reply"]?.jsonPrimitive?.content ?: "", it["raise_alert"]?.jsonPrimitive?.booleanOrNull ?: false)
+        }
+    }.getOrNull()
+
+    fun communityPoints(): Pair<Boolean, List<Pt>>? = runCatching {
+        get("/community/points")?.let { o ->
+            val sample = o["sample"]?.jsonPrimitive?.booleanOrNull ?: false
+            val pts = o["points"]!!.jsonArray.map { e ->
+                val p = e.jsonObject
+                Pt(p["lat"]!!.jsonPrimitive.double, p["lng"]!!.jsonPrimitive.double,
+                    p["band"]?.jsonPrimitive?.intOrNull ?: 0, p["kind"]?.jsonPrimitive?.content ?: "report")
+            }
+            sample to pts
+        }
+    }.getOrNull()
+
+    fun guide(recordJson: String, kind: String, state: String?): Guide? = runCatching {
+        post("/guide", """{"record":$recordJson,"kind":${q(kind)},"country":"India","state":${state?.let { q(it) } ?: "null"}}""")?.let { o ->
+            Guide(o["markdown"]!!.jsonPrimitive.content,
+                o["sources"]?.jsonArray?.map { s -> s.jsonObject.let { (it["title"]?.jsonPrimitive?.content ?: "") to (it["uri"]?.jsonPrimitive?.content ?: "") } } ?: emptyList())
+        }
+    }.getOrNull()
+
+    private fun q(s: String) = kotlinx.serialization.json.JsonPrimitive(s).toString()
 
     fun device(ctx: Context): String = Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
 

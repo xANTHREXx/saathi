@@ -34,6 +34,9 @@ data class TripRecord(
     val evidence: List<Evidence> = emptyList(),
     val seal: String? = null,
     val feltOff: String? = null,
+    val lat: Double? = null,
+    val lng: Double? = null,
+    val endedAt: Long? = null,
 )
 
 /** Small JSON files in the app's private storage. */
