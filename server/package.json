@@ -1,0 +1,8 @@
+{
+  "name": "saathi-server",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node index.js", "test": "node --test" },
+  "dependencies": { "express": "4.21.2", "@google/genai": "1.30.0" }
+}
