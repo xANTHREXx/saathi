@@ -8,6 +8,7 @@ import app.saathi.core.alertText
 import app.saathi.core.okText
 import app.saathi.core.recipients
 import app.saathi.data.Store
+import app.saathi.trip.LocationOnce
 import app.saathi.trip.TripState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,12 +65,18 @@ object AlertManager {
             alarm.buzzOnce()
             val recording = recorder.start()
             val s = Store.settings(app)
+            if (!TripState.now.onTrip || TripState.now.lastFix == null) {
+                // Outside a trip there is no feed: take one reading so the SMS always has a map link.
+                LocationOnce.get(app)?.let { f ->
+                    TripState.update { it.copy(lastFix = f, lastFixAtMs = f.t * 1000) }
+                }
+            }
             val ui = TripState.now
             val to = recipients(s.contacts, TripState.city())
             val liveUrl = LiveShare.create(s.name.ifBlank { "She" }, ui.plate)
             val fixAge = if (ui.lastFixAtMs == 0L) 0 else (System.currentTimeMillis() - ui.lastFixAtMs) / 1000
             val text = alertText(s.name.ifBlank { "Your contact" }, reason, ui.plate, event ?: ui.events.lastOrNull(),
-                ui.place.label, ui.lastFix, fixAge, liveUrl)
+                ui.place.label, ui.lastFix?.copy(t = ui.lastFixAtMs / 1000), fixAge, liveUrl)
             val r = SmsSender.send(app, to, text)
             alertLog += "${reason.name} at ${System.currentTimeMillis() / 1000}: told ${r.sent.joinToString()}"
             Log.i("Saathi", "alert ${reason.name}: $text")
@@ -109,6 +116,9 @@ object AlertManager {
         liveJob = scope.launch(Dispatchers.IO) {
             val until = System.currentTimeMillis() + 60 * 60 * 1000
             while (isActive && TripState.now.alertActive && System.currentTimeMillis() < until) {
+                if (!TripState.now.onTrip) LocationOnce.get(app, 3000)?.let { f ->
+                    TripState.update { it.copy(lastFix = f, lastFixAtMs = System.currentTimeMillis()) }
+                }
                 TripState.now.lastFix?.let { LiveShare.push(it, TripState.now.events.map { e -> e.detail }) }
                 delay(10_000)
             }

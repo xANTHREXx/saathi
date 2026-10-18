@@ -66,6 +66,7 @@ class TripService : Service() {
 
     private val screen = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
+            Log.i("Saathi", "screen ${i.action} at ${SystemClock.elapsedRealtime()}")
             if (power.onToggle(SystemClock.elapsedRealtime())) {
                 Log.i("Saathi", "power-button trigger")
                 AlertManager.raise(Reason.POWER_BUTTON)
@@ -149,7 +150,7 @@ class TripService : Service() {
                 @Suppress("DEPRECATION")
                 val a = Geocoder(this@TripService, Locale.ENGLISH).getFromLocation(fix.lat, fix.lng, 1)?.firstOrNull()
                     ?: return@launch
-                val label = listOfNotNull(a.featureName?.takeIf { f -> f.any { it.isLetter() } }, a.thoroughfare ?: a.subLocality)
+                val label = listOfNotNull(a.featureName?.takeIf { f -> f.any { it.isLetter() } && !f.contains("+") }, a.thoroughfare ?: a.subLocality)
                     .distinct().joinToString(", ").ifBlank { null }
                 TripState.update { it.copy(place = Place(a.locality ?: a.subAdminArea, a.adminArea, a.countryCode, label)) }
             }

@@ -19,7 +19,7 @@ class PowerPressTest {
 
     @Test
     fun slowPressesNever() {
-        assertEquals(listOf(false, false, false), run(PowerPress(3), 0, 1500, 3000))
+        assertEquals(listOf(false, false, false), run(PowerPress(3), 0, 1600, 3200))
     }
 
     @Test
@@ -36,5 +36,11 @@ class PowerPressTest {
     @Test
     fun firesOnceThenNeedsFreshPresses() {
         assertEquals(listOf(false, false, true, false), run(PowerPress(3), 0, 300, 600, 900))
+    }
+
+    @Test
+    fun screenEventsSpreadOverNearlyThreeSecondsFire() {
+        // Screen on/off broadcasts arrive late on real phones; three presses can land 2.8 s apart.
+        assertEquals(listOf(false, false, true), run(PowerPress(3), 0, 1400, 2800))
     }
 }

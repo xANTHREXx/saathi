@@ -115,7 +115,7 @@ private fun Onboarding(initial: Settings, onDone: (Settings) -> Unit) {
 
     val perms = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F4F1)).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("Set up Saathi", fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Ink)
         Text("About a minute. Everything here is asked once, so nothing interrupts you on a trip.", color = Color.DarkGray)
 
@@ -234,7 +234,7 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
     var showDemo by remember { mutableStateOf(false) }
     var cityOverride by remember { mutableStateOf("") }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F4F1)).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("Saathi", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Ink,
             modifier = Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { showDemo = !showDemo }) })
 
