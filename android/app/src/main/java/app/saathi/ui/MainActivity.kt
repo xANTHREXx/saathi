@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import app.saathi.alert.AlertManager
+import app.saathi.alert.Notifier
 import app.saathi.core.ANYWHERE
 import app.saathi.core.Contact
 import app.saathi.core.Reason
@@ -189,6 +190,9 @@ private fun Onboarding(initial: Settings, onDone: (Settings) -> Unit) {
         OutlinedButton(onClick = {
             ctx.startActivity(Intent(SysSettings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}")))
         }, Modifier.fillMaxWidth()) { Text("Keep Saathi running in the background") }
+        OutlinedButton(onClick = {
+            ctx.startActivity(Intent(SysSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }, Modifier.fillMaxWidth()) { Text("Notice Uber, Ola and Rapido rides for me") }
         SetupCheck()
 
         Button(
@@ -297,6 +301,15 @@ private fun Home(settings: Settings, onEdit: () -> Unit) {
                     Text("Replay: Bengaluru Uber auto, 30×")
                 }
                 OutlinedButton(onClick = { startTrip(ctx, "BUS", replay = "pune-bus") }) { Text("Replay: Pune bus, 30×") }
+                Text("Fake ride-app notifications", fontWeight = FontWeight.Bold)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(onClick = { Notifier.demoRide(ctx, "Ravi is on the way", "Auto KA 05 AB 1234 · arriving in 4 min") }) { Text("Booked") }
+                    OutlinedButton(onClick = { Notifier.demoRide(ctx, "Your auto has arrived", "KA 05 AB 1234 is waiting at pickup") }) { Text("Arrived") }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(onClick = { Notifier.demoRide(ctx, "Ravi is on the way", "Auto KA 05 XY 9876 · arriving in 3 min") }) { Text("Flagged auto") }
+                    OutlinedButton(onClick = { Notifier.demoRide(ctx, "Trip completed", "Rate your driver") }) { Text("Ended") }
+                }
                 OutlinedTextField(cityOverride, { cityOverride = it }, singleLine = true, label = { Text("Pretend I'm in (city)") })
                 OutlinedButton(onClick = {
                     TripState.update { it.copy(cityOverride = cityOverride.ifBlank { null },

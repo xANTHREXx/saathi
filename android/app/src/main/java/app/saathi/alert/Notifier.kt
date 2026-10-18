@@ -31,6 +31,16 @@ object Notifier {
         nm.createNotificationChannel(NotificationChannel(ALERT, "Alerts sent", NotificationManager.IMPORTANCE_HIGH).apply {
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         })
+        nm.createNotificationChannel(NotificationChannel("demo_ride", "Demo ride-app notifications", NotificationManager.IMPORTANCE_DEFAULT))
+    }
+
+    /** Demo only: posts a notification worded like a ride app's, which the ride watcher picks up. */
+    fun demoRide(ctx: Context, title: String, text: String) {
+        val n = Notification.Builder(ctx, "demo_ride")
+            .setSmallIcon(android.R.drawable.ic_menu_directions)
+            .setContentTitle(title).setContentText(text)
+            .build()
+        ctx.getSystemService(NotificationManager::class.java).notify(60 + (title.hashCode() and 0xF), n)
     }
 
     /** The persistent notification: usable from the lock screen. */

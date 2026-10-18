@@ -59,6 +59,21 @@
                 android:value="Personal safety: listens for the power-button help trigger" />
         </service>
 
+        <activity
+            android:name=".ui.PlateCheckActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <service
+            android:name=".trigger.RideNotificationListener"
+            android:exported="true"
+            android:label="Saathi ride watcher"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".widget.SaathiWidgetReceiver"
             android:exported="true">

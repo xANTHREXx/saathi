@@ -19,6 +19,7 @@ import app.saathi.core.Mode
 import app.saathi.core.PowerPress
 import app.saathi.core.Reason
 import app.saathi.core.Watcher
+import app.saathi.data.Api
 import app.saathi.data.Evidence
 import app.saathi.data.Store
 import app.saathi.data.TripRecord
@@ -124,11 +125,27 @@ class TripService : Service() {
             it.copy(onTrip = true, mode = mode, plate = i.getStringExtra(EXTRA_PLATE), app = i.getStringExtra(EXTRA_APP),
                 driver = i.getStringExtra(EXTRA_DRIVER), events = emptyList(), plateCheck = null)
         }
+        i.getStringExtra(EXTRA_PLATE)?.let { plate -> scope.launch(Dispatchers.IO) { warnIfFlagged(plate) } }
         val replay = i.getStringExtra(EXTRA_REPLAY)
         val source = if (replay != null) ReplaySource(this, replay, i.getIntExtra(EXTRA_SPEED, 30)) else FusedSource(this)
         tripJob = scope.launch {
             source.fixes().collect { fix -> onFix(fix) }
         }
+    }
+
+    /** ST-6: a count only, shown only to her, never a driver's name. */
+    private fun warnIfFlagged(plate: String) {
+        val f = Api.vehicle(plate) ?: return
+        if (!f.flagged) return
+        val text = "This vehicle has ${f.reports} reports from other women in the last 90 days. (Sample data)"
+        val n = android.app.Notification.Builder(this, "alert")
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle("Before you get in: $plate")
+            .setContentText(text)
+            .setStyle(android.app.Notification.BigTextStyle().bigText("$text You can continue, or cancel and rebook in your ride app."))
+            .build()
+        getSystemService(NotificationManager::class.java).notify(50, n)
+        Log.i("Saathi", "flagged $plate: ${f.reports}")
     }
 
     private fun onFix(fix: Fix) {
