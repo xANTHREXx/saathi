@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T23:30:00+05:30",
+  "title": "Design System: Saathi",
+  "extensions": {
+    "platform": "android (Jetpack Compose, Material 3); normative source android/app/src/main/java/app/saathi/ui/theme/SaathiTheme.kt",
+    "provenance": [
+      { "asset": "android/app/src/main/res/font/figtree.ttf", "source": "Figtree variable font, Google Fonts repository github.com/google/fonts, path ofl/figtree", "license": "SIL Open Font License 1.1" },
+      { "asset": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml, res/drawable/ic_launcher_foreground.xml, res/drawable/ic_launcher_background.xml", "source": "Vector adaptive icon authored in this build (ajrakh star, resist white on madder #C7372F); no raster assets", "license": "project-owned" }
+    ],
+    "colorMeta": {
+      "night-indigo-ground": { "role": "neutral", "displayName": "Night Indigo Ground", "m3": "background, surface, surfaceContainerLowest", "tonalRamp": ["#0D1222", "#141A2E", "#1B2340", "#252F52", "#3A4670", "#6F7899", "#AAB2CC", "#EEF0F7"] },
+      "night-surface-1": { "role": "neutral", "displayName": "Night Surface 1", "m3": "surfaceContainerLow, surfaceContainer" },
+      "night-surface-2": { "role": "neutral", "displayName": "Night Surface 2", "m3": "surfaceContainerHigh, surfaceVariant" },
+      "night-surface-3": { "role": "neutral", "displayName": "Night Surface 3", "m3": "surfaceContainerHighest, secondaryContainer, outlineVariant" },
+      "night-ink": { "role": "neutral", "displayName": "Night Ink", "m3": "onBackground, onSurface, inverseSurface" },
+      "night-ink-2": { "role": "neutral", "displayName": "Night Ink 2", "m3": "onSurfaceVariant; SaathiColors.fg2" },
+      "night-ink-3": { "role": "neutral", "displayName": "Night Ink 3 (marks only)", "m3": "outline; SaathiColors.fg3" },
+      "night-indigo-brand": { "role": "primary", "displayName": "Indigo Brand Ink (night)", "m3": "primary", "tonalRamp": ["#121A3D", "#18245A", "#25336B", "#2E3F86", "#5468B8", "#8FA2E8", "#B9C5F4", "#DCE2FF"] },
+      "night-indigo-container": { "role": "primary", "displayName": "Indigo Container (night)", "m3": "primaryContainer" },
+      "night-on-indigo-container": { "role": "primary", "displayName": "On Indigo Container (night)", "m3": "onPrimaryContainer" },
+      "night-madder": { "role": "tertiary", "displayName": "Madder Red (night)", "m3": "error; SaathiColors.help", "tonalRamp": ["#2E0B09", "#5A1714", "#86221D", "#B42A23", "#C7372F", "#E2675F", "#F3A59E", "#FFDAD5"] },
+      "night-madder-container": { "role": "tertiary", "displayName": "Madder Container (night)", "m3": "errorContainer; SaathiColors.helpContainer" },
+      "night-on-madder-container": { "role": "tertiary", "displayName": "On Madder Container (night)", "m3": "onErrorContainer; SaathiColors.onHelpContainer" },
+      "night-alum": { "role": "secondary", "displayName": "Alum Gold (night)", "m3": "secondary; SaathiColors.alum", "tonalRamp": ["#2E2100", "#4F3A00", "#6E5000", "#8A5F00", "#B5861E", "#E7B94A", "#F2D48A", "#FBEEC9"] },
+      "night-ok": { "role": "neutral", "displayName": "Ok Green (night)", "m3": "SaathiColors.ok" },
+      "night-hair": { "role": "neutral", "displayName": "Night Hair (8% white)", "m3": "SaathiColors.hair" },
+      "night-star-off": { "role": "neutral", "displayName": "Night Star Off (14% white)", "m3": "SaathiColors.starOff; starOn = night-ink" },
+      "day-resist-ground": { "role": "neutral", "displayName": "Resist White Ground", "m3": "background, surface", "tonalRamp": ["#11162A", "#4D5675", "#8790AD", "#C5CBDD", "#E2E6F2", "#EEF0F7", "#F5F6FA", "#FFFFFF"] },
+      "day-surface-1": { "role": "neutral", "displayName": "Day Surface 1", "m3": "surfaceContainerLowest, surfaceContainerLow, surfaceContainer" },
+      "day-surface-2": { "role": "neutral", "displayName": "Day Surface 2", "m3": "surfaceContainerHigh, surfaceVariant" },
+      "day-surface-3": { "role": "neutral", "displayName": "Day Surface 3", "m3": "surfaceContainerHighest, secondaryContainer, outlineVariant" },
+      "day-ink": { "role": "neutral", "displayName": "Day Ink", "m3": "onBackground, onSurface, inverseSurface" },
+      "day-ink-2": { "role": "neutral", "displayName": "Day Ink 2", "m3": "onSurfaceVariant; SaathiColors.fg2" },
+      "day-ink-3": { "role": "neutral", "displayName": "Day Ink 3 (marks only)", "m3": "outline; SaathiColors.fg3" },
+      "day-indigo-brand": { "role": "primary", "displayName": "Indigo Brand Ink (day)", "m3": "primary; SaathiColors.starOn (day)" },
+      "day-indigo-container": { "role": "primary", "displayName": "Indigo Container (day)", "m3": "primaryContainer" },
+      "day-on-indigo-container": { "role": "primary", "displayName": "On Indigo Container (day)", "m3": "onPrimaryContainer" },
+      "day-madder": { "role": "tertiary", "displayName": "Madder Red (day)", "m3": "error; SaathiColors.help" },
+      "day-madder-container": { "role": "tertiary", "displayName": "Madder Container (day)", "m3": "errorContainer; SaathiColors.helpContainer" },
+      "day-on-madder-container": { "role": "tertiary", "displayName": "On Madder Container (day)", "m3": "onErrorContainer; SaathiColors.onHelpContainer" },
+      "day-alum": { "role": "secondary", "displayName": "Alum Bronze (day)", "m3": "secondary; SaathiColors.alum" },
+      "day-ok": { "role": "neutral", "displayName": "Ok Green (day)", "m3": "SaathiColors.ok" },
+      "day-hair": { "role": "neutral", "displayName": "Day Hair (10% indigo)", "m3": "SaathiColors.hair" },
+      "day-star-off": { "role": "neutral", "displayName": "Day Star Off (15% brand)", "m3": "SaathiColors.starOff" },
+      "plate-white": { "role": "neutral", "displayName": "Plate White", "m3": "PlateText only" },
+      "plate-black": { "role": "neutral", "displayName": "Plate Black", "m3": "PlateText only" }
+    },
+    "typographyMeta": {
+      "display-large": { "displayName": "Display", "purpose": "Screen statements: Are you okay?; countdown overrides to 72/76sp." },
+      "display-small": { "displayName": "Display Small", "purpose": "Set up Saathi, My trips, Your contacts were told." },
+      "headline-medium": { "displayName": "Headline", "purpose": "Reversed-plate labels: Hold for help, I'm okay." },
+      "headline-small": { "displayName": "Headline Small", "purpose": "Don't get in; second spoken phrase." },
+      "title-large": { "displayName": "Title", "purpose": "Sheet heads, minutes watched, quiet help-plate label." },
+      "title-medium": { "displayName": "Title Medium", "purpose": "Section and card heads." },
+      "title-small": { "displayName": "Title Small", "purpose": "Station names, tile labels, banner heads." },
+      "body-large": { "displayName": "Body", "purpose": "Explanations under screen statements, in fg2." },
+      "body-medium": { "displayName": "Body Medium", "purpose": "Status lines and hints." },
+      "body-small": { "displayName": "Body Small", "purpose": "Station subtitles, plate sub-lines." },
+      "label-large": { "displayName": "Label", "purpose": "Check-in reason pill." },
+      "label-medium": { "displayName": "Label Medium", "purpose": "Chips, language names." },
+      "label-small": { "displayName": "Label Small", "purpose": "'watched', small facts." },
+      "plate": { "displayName": "Plate", "purpose": "Number-plate capitals; 22sp when big." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "stamp", "value": "CubicBezierEasing(0.05, 0.7, 0.1, 1); scale 1.6 to 1 over 200ms, alpha 0.35 to 1 over 260ms", "purpose": "Each watched minute stamps the next ajrakh star. Skipped when animator duration scale is 0." },
+      { "name": "hold-fill", "value": "2000ms linear; release drains over 250ms", "purpose": "Hold for help fills with a 22% black wash; completion raises the alert." },
+      { "name": "countdown", "value": "100ms tick, alum arc sweeping from -90 degrees", "purpose": "Check-in ring drains over a 10s window." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "single column; verified at 1080x2400 and at 130% font scale" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Hold for help plate",
+      "kind": "button",
+      "refersTo": "help-plate",
+      "description": "The reversed plate on Home. Madder, bottom-anchored label, fills as she holds for 2 seconds.",
+      "html": "<button class=\"ds-help\"><span class=\"ds-help-fill\"></span><span class=\"ds-help-t\">Hold for help</span><span class=\"ds-help-s\">2 seconds · texts Riya and Amma</span></button>",
+      "css": ".ds-help { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; width: 220px; min-height: 140px; padding: 18px; border: none; border-radius: 32px; background: #C7372F; color: #fff; font-family: Figtree, sans-serif; text-align: left; cursor: pointer; } .ds-help-fill { position: absolute; inset: 0 100% 0 0; background: rgba(0,0,0,0.22); transition: right 2s linear; } .ds-help:active .ds-help-fill { right: 0; } .ds-help-t { position: relative; font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; } .ds-help-s { position: relative; margin-top: 4px; font-size: 13px; line-height: 18px; color: #FFDAD5; } .ds-help:focus-visible { outline: 3px solid #8FA2E8; outline-offset: 3px; }"
+    },
+    {
+      "name": "Quiet help plate (during alert)",
+      "kind": "button",
+      "refersTo": "help-plate-quiet",
+      "description": "While an alert is active the help plate steps back to the madder container so I'm okay owns the screen.",
+      "html": "<button class=\"ds-helpq\"><span class=\"ds-helpq-t\">Hold to alert again</span><span class=\"ds-helpq-s\">2 seconds · texts Riya and Amma</span></button>",
+      "css": ".ds-helpq { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; width: 220px; min-height: 140px; padding: 18px; border: none; border-radius: 32px; background: #5A1714; color: #FFDAD5; font-family: Figtree, sans-serif; text-align: left; cursor: pointer; } .ds-helpq-t { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.015em; } .ds-helpq-s { margin-top: 4px; font-size: 13px; line-height: 18px; color: rgba(255,218,213,0.8); } .ds-helpq:focus-visible { outline: 3px solid #8FA2E8; outline-offset: 3px; }"
+    },
+    {
+      "name": "I'm okay plate",
+      "kind": "button",
+      "refersTo": "okay-plate",
+      "description": "Inverse-surface reversed plate shown during an alert or check-in.",
+      "html": "<button class=\"ds-okay\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\"><path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" fill=\"currentColor\"/></svg>I'm okay</button>",
+      "css": ".ds-okay { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 400px; height: 88px; border: none; border-radius: 32px; background: #EEF0F7; color: #0D1222; font-family: Figtree, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; cursor: pointer; transition: filter 0.15s; } .ds-okay:hover { filter: brightness(0.96); } .ds-okay:focus-visible { outline: 3px solid #8FA2E8; outline-offset: 3px; }"
+    },
+    {
+      "name": "Action tile",
+      "kind": "button",
+      "refersTo": "tile",
+      "description": "Speak for me and Call Saathi beside the help plate. Tonal, indigo icon.",
+      "html": "<button class=\"ds-tile\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\"><path d=\"M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z\" fill=\"#8FA2E8\"/></svg>Call Saathi</button>",
+      "css": ".ds-tile { display: flex; align-items: center; gap: 10px; width: 190px; height: 64px; padding: 0 14px; border: none; border-radius: 20px; background: #1B2340; color: #EEF0F7; font-family: Figtree, sans-serif; font-size: 15px; line-height: 20px; font-weight: 600; cursor: pointer; transition: background 0.15s; } .ds-tile:hover { background: #252F52; } .ds-tile:focus-visible { outline: 3px solid #8FA2E8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Mode chip",
+      "kind": "chip",
+      "refersTo": "mode-chip",
+      "description": "Walk / Bus / Train / Auto starters on the ready sheet.",
+      "html": "<div class=\"ds-modes\"><button class=\"ds-mode\">Walk</button><button class=\"ds-mode ds-mode-on\">Auto</button></div>",
+      "css": ".ds-modes { display: flex; gap: 8px; } .ds-mode { width: 80px; height: 72px; border: none; border-radius: 20px; background: #1B2340; color: #EEF0F7; font-family: Figtree, sans-serif; font-size: 13px; line-height: 18px; font-weight: 500; cursor: pointer; } .ds-mode:hover { background: #252F52; } .ds-mode-on { background: #25336B; color: #DCE2FF; } .ds-mode:focus-visible { outline: 3px solid #8FA2E8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Map chip with plate",
+      "kind": "chip",
+      "refersTo": "map-chip",
+      "description": "Floating chips over the map: the mark, then city or (on a trip) the plate.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip\"><span class=\"ds-mark\"><svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\"><rect x=\"5\" y=\"5\" width=\"14\" height=\"14\" fill=\"#fff\"/><rect x=\"5\" y=\"5\" width=\"14\" height=\"14\" fill=\"#fff\" transform=\"rotate(45 12 12)\"/></svg></span>Saathi</span><span class=\"ds-chip\"><span class=\"ds-plate\">KA 05 AB 1234</span></span></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; background: #0D1222; padding: 12px; } .ds-chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border-radius: 18px; background: #141A2E; border: 1px solid rgba(255,255,255,0.08); color: #EEF0F7; font-family: Figtree, sans-serif; font-size: 15px; font-weight: 600; } .ds-mark { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; background: #25336B; } .ds-plate { padding: 1px 8px; background: #FAFAF7; color: #121212; border: 1.5px solid #121212; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; }"
+    },
+    {
+      "name": "Told banner",
+      "kind": "card",
+      "refersTo": "told-banner",
+      "description": "After an alert: who was told and what was sent.",
+      "html": "<div class=\"ds-told\"><span class=\"ds-told-d\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\"><path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" fill=\"#fff\"/></svg></span><div><div class=\"ds-told-t\">Riya and Amma were told</div><div class=\"ds-told-s\">Live location link sent · emergency step simulated</div></div></div>",
+      "css": ".ds-told { display: flex; align-items: center; gap: 12px; max-width: 400px; padding: 14px; border-radius: 20px; background: #5A1714; font-family: Figtree, sans-serif; } .ds-told-d { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #C7372F; } .ds-told-t { color: #FFDAD5; font-size: 15px; line-height: 20px; font-weight: 600; } .ds-told-s { color: rgba(255,218,213,0.8); font-size: 13px; line-height: 18px; }"
+    },
+    {
+      "name": "Trip card",
+      "kind": "card",
+      "refersTo": "trip-card",
+      "description": "A watched trip in My trips: surface 1, hair edge, 28dp corners.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-t\">Auto</div><div class=\"ds-card-s\">Sat 18 Oct, 10:55 pm</div><div class=\"ds-card-b\">Stopped 5 min</div></div>",
+      "css": ".ds-card { max-width: 380px; padding: 18px; border-radius: 28px; background: #141A2E; border: 1px solid rgba(255,255,255,0.08); font-family: Figtree, sans-serif; color: #EEF0F7; } .ds-card-t { font-size: 17px; line-height: 22px; font-weight: 600; } .ds-card-s { font-size: 13px; line-height: 18px; color: #AAB2CC; } .ds-card-b { margin-top: 6px; font-size: 15px; line-height: 21px; }"
+    },
+    {
+      "name": "Star thread",
+      "kind": "custom",
+      "refersTo": "line-diagram",
+      "description": "Stamped ajrakh stars on a star-off rail; the newest turns alum on a stall.",
+      "html": "<div class=\"ds-thread\"><svg class=\"ds-star\" viewBox=\"0 0 24 24\"><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\"/><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\" transform=\"rotate(45 12 12)\"/></svg><svg class=\"ds-star\" viewBox=\"0 0 24 24\"><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\"/><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\" transform=\"rotate(45 12 12)\"/></svg><svg class=\"ds-star ds-star-stall\" viewBox=\"0 0 24 24\"><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\"/><rect x=\"3.4\" y=\"3.4\" width=\"17.2\" height=\"17.2\" transform=\"rotate(45 12 12)\"/></svg></div>",
+      "css": ".ds-thread { display: inline-flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 6px; background: linear-gradient(rgba(255,255,255,0.14),rgba(255,255,255,0.14)) center/2px 100% no-repeat, #0D1222; } .ds-star { width: 14px; height: 14px; fill: #EEF0F7; animation: ds-stamp 0.26s cubic-bezier(0.05,0.7,0.1,1) both; } .ds-star-stall { fill: #E7B94A; } @keyframes ds-stamp { from { transform: scale(1.6); opacity: 0.35; } to { transform: scale(1); opacity: 1; } } @media (prefers-reduced-motion: reduce) { .ds-star { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Indigo Cloth, Stamped Thread",
+    "overview": "Saathi is dyed like Ajrakh cloth. Night is indigo ground and day is resist white. Madder red is the costly dye, so it goes only on help and alerts. Alum gold is the mordant, the attention colour that shows before anything is sent. The one motif is the eight-point ajrakh star, two squares with one turned 45 degrees. It appears as the app mark, and it is also the trip thread: one star is stamped onto her route for each minute Saathi watches. When the trip stalls, the newest star turns alum and the stamping stops.\n\nScreens follow a map-and-sheet trip layout like Pixel and Maps. A calm, luminance-only map sits at the top, and a 28dp sheet carries the line diagram. Help is pinned below the scroll so it never leaves her thumb. Density is low and controls are large: every target is at least 48dp and the help row is at least 140dp. Each screen has exactly one full-contrast \"reversed plate\", the thing to press. Depth comes from tonal steps and hairlines, never from shadows.\n\nNative Android: Jetpack Compose with Material 3 roles. Every colour above maps onto an M3 slot or onto the `SaathiColors` extension in `ui/theme/SaathiTheme.kt`, which is the normative source.",
+    "keyCharacteristics": [
+      "Indigo night ground with three tonal surface steps, and a resist-white day ground with white surfaces.",
+      "Madder reserved for help and alerts. Alum for stalls, check-ins and pre-send attention.",
+      "Eight-point ajrakh star as both the mark and the trip thread, stamped one per watched minute.",
+      "One reversed plate per screen: Hold for help normally, I'm okay during an alert or check-in.",
+      "Figtree in one family at weights 400 to 700, with system Noto for Kannada and Devanagari.",
+      "Flat and tonal throughout, with 1dp hairlines instead of boxes or shadows."
+    ],
+    "rules": [
+      { "name": "The Madder Rule", "body": "Madder red is spent only on help and alerts: the help plate, alert confirmations, a plate mismatch, and the \"something happened / don't get in\" escalations. Nothing decorative is red, and nothing turns red before an alert is actually sent.", "section": "colors" },
+      { "name": "The Alum-Before-Send Rule", "body": "Attention before anything is sent is alum: stalls, the check-in pill, and the draining countdown ring. Alum turns to madder only once contacts have been told.", "section": "colors" },
+      { "name": "The Ink-3-Is-Not-Text Rule", "body": "fg3 colours marks and never text. Secondary text uses fg2.", "section": "colors" },
+      { "name": "The Tight-At-Size Rule", "body": "Negative tracking applies only from titleMedium up. Body and label styles stay at 0.", "section": "typography" },
+      { "name": "The Grow-Don't-Clip Rule", "body": "Layouts that hold text grow with the system font scale (`heightIn(min)` with `IntrinsicSize.Min`) instead of clipping. The help row was verified at 130% font scale.", "section": "typography" },
+      { "name": "The Pinned Help Rule", "body": "Help never scrolls away. The help row lives outside the scroll container, under a hair rule, on every trip state.", "section": "layout" },
+      { "name": "The One Plate Chip Rule", "body": "On a trip the vehicle plate outranks the city. While a plate chip shows in the map chip row, the city chip is hidden.", "section": "layout" },
+      { "name": "The Tonal-Only Rule", "body": "Separate layers by surface step or hairline. If something needs to read as \"above\", move it one surface step up rather than adding a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do read every colour through `MaterialTheme.colorScheme` or `Saathi.colors`, so both night and day resolve.",
+      "Do keep exactly one reversed plate per screen: Hold for help normally, I'm okay during an alert or check-in.",
+      "Do step the help plate back to helpContainer with \"Hold to alert again\" while an alert is active.",
+      "Do pin help outside the scroll, under a 1dp hair rule.",
+      "Do stamp one ajrakh star per watched minute, and turn the newest one alum when the trip stalls.",
+      "Do use alum for anything that asks for attention before a message is sent.",
+      "Do let containers grow with font scale (`heightIn(min)` with intrinsic height) rather than clip names.",
+      "Do use the indigo tile for the in-app mark, and keep the madder launcher icon."
+    ],
+    "donts": [
+      "Don't use madder for anything other than help and alerts. That includes validation errors and decoration.",
+      "Don't turn a countdown or stall red before an alert is actually sent.",
+      "Don't set text in fg3. It colours marks only.",
+      "Don't show the city chip while a plate chip is showing.",
+      "Don't add shadows. Separate layers with a surface step or a hairline.",
+      "Don't put a second full-contrast plate on a screen that already has one."
+    ]
+  }
+}

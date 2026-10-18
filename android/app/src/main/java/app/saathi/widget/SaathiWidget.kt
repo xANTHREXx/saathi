@@ -9,12 +9,12 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.action.actionStartService
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -28,7 +28,6 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.state.PreferencesGlanceStateDefinition
@@ -36,16 +35,19 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.GlanceModifier as GM
 import app.saathi.trip.TripService
 import app.saathi.trip.TripState
 import app.saathi.ui.SpeakForMeActivity
 
 private val SLID = booleanPreferencesKey("slid")
-private val ink = ColorProvider(Color(0xFF111111))
+private val ground = Color(0xFF141A2E)
+private val tile = Color(0xFF252F52)
+private val madder = Color(0xFFC7372F)
 private val white = ColorProvider(Color.White)
+private val mist = ColorProvider(Color(0xFFC8CEE4))
+private val madderMist = ColorProvider(Color(0xFFFFDAD5))
 
-/** Main state: one big SOS. Slide across for Walk, Bus, Train. */
+/** Main state: one big SOS. Slide across for Walk, Bus, Train. Night indigo; madder only for help. */
 class SaathiWidget : GlanceAppWidget() {
     override val stateDefinition = PreferencesGlanceStateDefinition
 
@@ -53,39 +55,38 @@ class SaathiWidget : GlanceAppWidget() {
         provideContent {
             val slid = currentState(SLID) ?: false
             val onTrip = TripState.now.onTrip
-            Column(GlanceModifier.fillMaxSize().background(Color(0xFF1A1D21)).cornerRadius(20.dp).padding(8.dp)) {
+            Column(GlanceModifier.fillMaxSize().background(ground).cornerRadius(28.dp).padding(8.dp)) {
                 if (!slid) {
                     Box(
-                        GlanceModifier.fillMaxWidth().defaultWeight().background(Color(0xFFC8352A)).cornerRadius(16.dp)
-                            .clickable(actionStartActivity<SpeakForMeActivity>()),
-                        contentAlignment = Alignment.Center,
+                        GlanceModifier.fillMaxWidth().defaultWeight().background(madder).cornerRadius(22.dp)
+                            .clickable(actionStartActivity<SpeakForMeActivity>()).padding(16.dp),
+                        contentAlignment = Alignment.BottomStart,
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("SOS", style = TextStyle(color = white, fontSize = 34.sp, fontWeight = FontWeight.Bold))
-                            Text(if (onTrip) "Watching your trip" else "Speak for me and alert", style = TextStyle(color = white, fontSize = 12.sp))
+                        Column {
+                            Text("Help", style = TextStyle(color = white, fontSize = 30.sp, fontWeight = FontWeight.Bold))
+                            Text(if (onTrip) "Watching your trip · one tap speaks for you and texts your contacts" else "One tap speaks for you and texts your contacts",
+                                style = TextStyle(color = madderMist, fontSize = 12.sp))
                         }
                     }
-                    Spacer(GlanceModifier.height(6.dp))
-                    Text("Start a trip  ›  ›", modifier = GlanceModifier.fillMaxWidth().padding(6.dp)
+                    Text("Slide for Walk, Bus, Train", modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp)
                         .clickable(actionRunCallback<Slide>()),
-                        style = TextStyle(color = ColorProvider(Color(0xFFF2B705)), fontSize = 14.sp, fontWeight = FontWeight.Medium))
+                        style = TextStyle(color = mist, fontSize = 13.sp, fontWeight = FontWeight.Medium))
                 } else {
                     Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
-                        listOf("WALK" to "Walk", "BUS" to "Bus", "TRAIN" to "Train").forEach { (mode, label) ->
+                        listOf("WALK" to "Walk", "BUS" to "Bus", "TRAIN" to "Train").forEachIndexed { i, (mode, label) ->
+                            if (i > 0) Spacer(GlanceModifier.width(8.dp))
                             Box(
-                                GM.defaultWeight().fillMaxSize().background(Color(0xFFF2B705)).cornerRadius(14.dp)
+                                GlanceModifier.defaultWeight().fillMaxSize().background(tile).cornerRadius(20.dp)
                                     .clickable(actionStartService(
                                         Intent(context, TripService::class.java).setAction(TripService.ACTION_START_TRIP)
                                             .putExtra(TripService.EXTRA_MODE, mode), isForegroundService = true)),
                                 contentAlignment = Alignment.Center,
-                            ) { Text(label, style = TextStyle(color = ink, fontSize = 16.sp, fontWeight = FontWeight.Bold)) }
-                            Spacer(GM.width(6.dp))
+                            ) { Text(label, style = TextStyle(color = white, fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
                         }
                     }
-                    Spacer(GlanceModifier.height(6.dp))
-                    Text("‹  ‹  Back to SOS", modifier = GlanceModifier.fillMaxWidth().padding(6.dp)
+                    Text("Back to SOS", modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp)
                         .clickable(actionRunCallback<Slide>()),
-                        style = TextStyle(color = ColorProvider(Color(0xFFE6E6E6)), fontSize = 14.sp))
+                        style = TextStyle(color = mist, fontSize = 13.sp))
                 }
             }
         }

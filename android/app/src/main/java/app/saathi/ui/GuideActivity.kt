@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,7 +54,7 @@ Your trip record below has fingerprints for each piece of evidence, so you can s
         val caseId = intent.getStringExtra(EXTRA_CASE)
         val kind = intent.getStringExtra(EXTRA_KIND) ?: "something happened"
         val record = Store.records(this).firstOrNull { it.caseId == caseId }
-        setContent {
+        setContent { app.saathi.ui.theme.SaathiTheme(dark = false) {
             var text by remember { mutableStateOf<String?>(null) }
             var sources by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
             LaunchedEffect(Unit) {
@@ -63,22 +64,22 @@ Your trip record below has fingerprints for each piece of evidence, so you can s
                 text = g?.markdown ?: offline
                 sources = g?.sources ?: emptyList()
             }
-            Column(Modifier.fillMaxSize().background(Color(0xFFF3F4F1)).verticalScroll(rememberScrollState()).padding(20.dp),
+            Column(Modifier.fillMaxSize().background(Color(0xFFF5F6FA)).systemBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("What you can do next", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1D21))
-                Text(text ?: "Preparing your options…", fontSize = 16.sp, color = Color(0xFF1A1D21), lineHeight = 23.sp)
+                Text("What you can do next", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1222))
+                Text(text ?: "Preparing your options…", fontSize = 16.sp, color = Color(0xFF0D1222), lineHeight = 23.sp)
                 if (sources.isNotEmpty()) {
                     Text("Sources", fontWeight = FontWeight.Bold)
-                    sources.forEach { (t, u) -> Text("$t\n$u", fontSize = 13.sp, color = Color(0xFF1F6F4A)) }
+                    sources.forEach { (t, u) -> Text("$t\n$u", fontSize = 13.sp, color = Color(0xFF2E3F86)) }
                 }
                 record?.let { r ->
                     Text("Trip record ${r.caseId}", fontWeight = FontWeight.Bold)
-                    r.evidence.forEach { Text("${it.name}: ${it.sha256}", fontSize = 12.sp, color = Color(0xFF5B6168)) }
+                    r.evidence.forEach { Text("${it.name}: ${it.sha256}", fontSize = 12.sp, color = Color(0xFF4D5675)) }
                 }
                 Button(onClick = {
                     getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("Saathi draft", text ?: ""))
                 }, Modifier.fillMaxWidth()) { Text("Copy, to edit and send yourself") }
             }
-        }
+        } }
     }
 }

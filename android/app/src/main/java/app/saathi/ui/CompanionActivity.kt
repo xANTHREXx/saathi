@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,26 +86,26 @@ class CompanionActivity : ComponentActivity() {
             })
         }
 
-        setContent {
-            Column(Modifier.fillMaxSize().background(Color(0xFF1A1D21)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        setContent { app.saathi.ui.theme.SaathiTheme(dark = true) {
+            Column(Modifier.fillMaxSize().background(Color(0xFF0D1222)).systemBarsPadding().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Saathi is on the call", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                 Text(if (offline.value) "No connection. Use Help or Speak for me." else "Speak out loud, so anyone near you hears you're on a call.",
-                    color = if (offline.value) Color(0xFFF2B705) else Color(0xFFA3A9AF))
+                    color = if (offline.value) Color(0xFF8FA2E8) else Color(0xFFAAB2CC))
                 LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(lines) { (role, text) ->
-                        Text(text, color = if (role == "saathi") Color(0xFFF2B705) else Color.White, fontSize = 18.sp,
+                        Text(text, color = if (role == "saathi") Color(0xFF8FA2E8) else Color.White, fontSize = 18.sp,
                             modifier = Modifier.fillMaxWidth().padding(start = if (role == "saathi") 0.dp else 40.dp))
                     }
                 }
-                if (TripState.now.alertActive) Text("Your contacts were told: ${TripState.now.told.joinToString()}", color = Color(0xFFFF8A7A))
+                if (TripState.now.alertActive) Text("Your contacts were told: ${TripState.now.told.joinToString()}", color = Color(0xFFFFDAD5))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(typed.value, { typed.value = it }, Modifier.weight(1f), singleLine = true,
-                        label = { Text("Or type", color = Color(0xFFA3A9AF)) })
+                        label = { Text("Or type", color = Color(0xFFAAB2CC)) })
                     Button(onClick = { if (typed.value.isNotBlank()) { send(typed.value); typed.value = "" } }) { Text("Send") }
                 }
                 Box(
                     Modifier.fillMaxWidth().height(96.dp).clip(RoundedCornerShape(20.dp))
-                        .background(if (listening.value) Color(0xFF2E8A5C) else Color(0xFF1F6F4A))
+                        .background(if (listening.value) Color(0xFF25336B) else Color(0xFF2E3F86))
                         .pointerInput(Unit) {
                             detectTapGestures(onPress = { startListening(); tryAwaitRelease(); recognizer?.stopListening() })
                         },
@@ -112,13 +113,13 @@ class CompanionActivity : ComponentActivity() {
                 ) { Text(if (listening.value) "Listening…" else "Hold to talk", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { AlertManager.raise(Reason.COMPANION) }, Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC8352A))) { Text("Help") }
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC7372F))) { Text("Help") }
                     Button(onClick = { startActivity(Intent(this@CompanionActivity, SpeakForMeActivity::class.java)) }, Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2B705), contentColor = Color(0xFF111111))) { Text("Speak for me") }
-                    Button(onClick = { finish() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3A3F45))) { Text("End call") }
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8FA2E8), contentColor = Color(0xFF0D1222))) { Text("Speak for me") }
+                    Button(onClick = { finish() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF252F52))) { Text("End call") }
                 }
             }
-        }
+        } }
     }
 
     private fun startListening() {

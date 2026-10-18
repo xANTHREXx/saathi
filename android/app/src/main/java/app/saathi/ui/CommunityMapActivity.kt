@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,7 @@ class CommunityMapActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Configuration.getInstance().userAgentValue = packageName
-        setContent { CommunityMap() }
+        setContent { app.saathi.ui.theme.SaathiTheme(dark = false) { CommunityMap() } }
     }
 
     @Composable
@@ -63,22 +64,22 @@ class CommunityMapActivity : ComponentActivity() {
         val pts = data?.second?.filter { !nightOnly || it.band == 7 || it.band == 0 } ?: emptyList()
         val note = data?.second?.let { all -> areaNote(all.map { Report(it.lat, it.lng, it.band) }, here, nightOnly) }
 
-        Column(Modifier.fillMaxSize().background(Color(0xFFF3F4F1))) {
+        Column(Modifier.fillMaxSize().background(Color(0xFFF5F6FA)).systemBarsPadding()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Community map", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1D21))
-                    if (data?.first == true) Text("Sample data", color = Color(0xFF1A1D21), fontSize = 12.sp,
-                        modifier = Modifier.background(Color(0xFFF2B705), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp))
+                    Text("Community map", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1222))
+                    if (data?.first == true) Text("Sample data", color = Color(0xFF0D1222), fontSize = 12.sp,
+                        modifier = Modifier.background(Color(0xFF8FA2E8), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp))
                 }
                 Text("Where women reported something, even small things, in the last 90 days. Never names, never exact places.",
-                    color = Color(0xFF5B6168), fontSize = 14.sp)
+                    color = Color(0xFF4D5675), fontSize = 14.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(nightOnly, { nightOnly = true }, label = { Text("After 9 pm") })
                     FilterChip(!nightOnly, { nightOnly = false }, label = { Text("All day") })
                 }
                 when {
-                    failed -> Text("No connection. The map needs data.", color = Color(0xFF7A1A12))
-                    note != null -> Text(note, fontWeight = FontWeight.Bold, color = Color(0xFF7A1A12))
+                    failed -> Text("No connection. The map needs data.", color = Color(0xFFB42A23))
+                    note != null -> Text(note, fontWeight = FontWeight.Bold, color = Color(0xFFB42A23))
                 }
             }
             Box(Modifier.fillMaxWidth().weight(1f).clipToBounds()) {

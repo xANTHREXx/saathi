@@ -27,6 +27,10 @@ data class UiState(
     val smsFailed: List<String> = emptyList(),
     val recording: Boolean = false,
     val plateCheck: String? = null,
+    /** When the current trip started, for the watched-minutes thread. */
+    val startedAtMs: Long = 0,
+    /** This trip's fixes, newest last, capped, for the map line. */
+    val trail: List<Fix> = emptyList(),
 )
 
 /** One shared state for the service, the screens, the widget. */

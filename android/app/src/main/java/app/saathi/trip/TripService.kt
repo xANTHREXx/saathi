@@ -123,7 +123,8 @@ class TripService : Service() {
         watcher = Watcher(mode, emptyList(), durationS = null, startedAt = tripStartedAt)
         TripState.update {
             it.copy(onTrip = true, mode = mode, plate = i.getStringExtra(EXTRA_PLATE), app = i.getStringExtra(EXTRA_APP),
-                driver = i.getStringExtra(EXTRA_DRIVER), events = emptyList(), plateCheck = null)
+                driver = i.getStringExtra(EXTRA_DRIVER), events = emptyList(), plateCheck = null,
+                startedAtMs = tripStartedAt * 1000, trail = emptyList())
         }
         i.getStringExtra(EXTRA_PLATE)?.let { plate -> scope.launch(Dispatchers.IO) { warnIfFlagged(plate) } }
         val replay = i.getStringExtra(EXTRA_REPLAY)
@@ -150,7 +151,7 @@ class TripService : Service() {
 
     private fun onFix(fix: Fix) {
         fixes += fix
-        TripState.update { it.copy(lastFix = fix, lastFixAtMs = System.currentTimeMillis()) }
+        TripState.update { it.copy(lastFix = fix, lastFixAtMs = System.currentTimeMillis(), trail = if (it.onTrip) (it.trail + fix).takeLast(600) else it.trail) }
         maybeGeocode(fix)
         val event = watcher?.add(fix) ?: return
         Log.i("Saathi", "watcher: ${event.kind} ${event.detail}")
