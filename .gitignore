@@ -1,0 +1,9 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.superpowers/
+node_modules/
+.env
+captures/
